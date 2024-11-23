@@ -1,0 +1,41 @@
+Install NVIDIA Container Toolkit: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
+
+Build docker file
+
+Run docker file with: sudo docker run --gpus all -it   --env="DISPLAY"   --env="QT_X11_NO_MITSHM=1"   --env="LIBGL_ALWAYS_INDIRECT=1"   --env="__GLX_VENDOR_LIBRARY_NAME=nvidia"   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"   --device /dev/dri   --volume="$HOME:/home/host_home:rw"   ros_noetic_gpu
+
+
+Test if GPU is accessible: nvidia-smi
+
+Force PC to use NVIDIA Card: set NVIDIA prime settings to Performance mode: https://superuser.com/questions/1770857/how-to-properly-setup-intel-and-nvidia-gpus-on-ubuntu
+
+
+Test performance: vblank_mode=0 glxgears
+
+Show GPU Usage: Install "Mission Center"
+
+Add this function to .bashrc: 
+
+
+docker_gpu_init_ros_noetic() {
+    sudo docker run --gpus all -it \
+        --env="DISPLAY" \
+        --env="QT_X11_NO_MITSHM=1" \
+        --env="LIBGL_ALWAYS_INDIRECT=1" \
+        --env="__GLX_VENDOR_LIBRARY_NAME=nvidia" \
+        --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+        --device /dev/dri \
+        --volume="$HOME:/home/host_home:rw" \
+        --name ros_noetic_gpu_session \
+        ros_noetic_gpu
+}
+
+
+
+Run docker with docker_ros_noetic_gpu
+
+enter the same session with: alias docker_gpu_exec_ros_neotic='sudo docker exec -it ros_noetic_gpu_session /bin/zsh'
+Check the ID via sudo docker ps
+
+
+Always: source /opt/ros/neotic/setup.zsh

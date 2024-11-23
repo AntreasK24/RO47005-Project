@@ -1,0 +1,61 @@
+FROM osrf/ros:noetic-desktop-full
+
+# Install dependencies for adding NVIDIA repositories and other required packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    curl \
+    gnupg2 \
+    lsb-release \
+    x11-apps \
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    libegl1-mesa \
+    libglu1-mesa \
+    libx11-dev \
+    libxrandr-dev \
+    libxext-dev \
+    zsh \
+    git && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add NVIDIA's repository for the container toolkit (based on NVIDIA instructions)
+RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg && \
+    curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+# Optionally configure experimental packages if needed (uncomment the next line if needed)
+# RUN sed -i -e '/experimental/ s/^#//g' /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+# Update the apt package list and install the NVIDIA Container Toolkit
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    nvidia-container-toolkit && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install additional ROS packages for Gazebo, RViz, and more
+RUN apt-get update && apt-get install -y \
+    ros-noetic-gazebo-ros-pkgs \
+    ros-noetic-rviz \
+    ros-noetic-rosbridge-suite \
+    ros-noetic-ros-control \
+    ros-noetic-ros-controllers && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Oh My Zsh for a better shell experience
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || true
+
+# Set environment variables for GPU usage and Gazebo
+ENV QT_X11_NO_MITSHM=1
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+ENV NVIDIA_REQUIRE_CUDA="cuda>=11.0"
+
+# Set up the entrypoint for ROS environment
+ENTRYPOINT ["/ros_entrypoint.sh"]
+
+# Set ROS environment variables
+SHELL ["/bin/bash", "-c"]
+
+# Default shell command
+CMD ["/bin/zsh"]
+
