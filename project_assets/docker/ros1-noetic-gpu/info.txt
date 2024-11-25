@@ -39,3 +39,21 @@ Check the ID via sudo docker ps
 
 
 Always: source /opt/ros/neotic/setup.zsh
+
+
+# Start docker (ROS1 Noetic - RO47005 - NVIDIA GPU with catkin)
+alias docker_gpu_exec_ros_neotic='sudo docker exec -it ros_noetic_gpu_session /bin/zsh'
+alias docker_gpu_restart_ros_noetic='sudo docker start -ai ros_noetic_gpu_session'
+#sudo docker rm -f ros_noetic_gpu_session
+docker_gpu_init_ros_noetic() {
+    sudo docker run --gpus all -it \
+        --env="DISPLAY" \
+        --env="QT_X11_NO_MITSHM=1" \
+        --env="LIBGL_ALWAYS_INDIRECT=1" \
+        --env="__GLX_VENDOR_LIBRARY_NAME=nvidia" \
+        --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+        --device /dev/dri \
+        --volume="$HOME:/home/host_home:rw" \
+	--name ros_noetic_gpu_session \
+        ros_noetic_gpu
+}
