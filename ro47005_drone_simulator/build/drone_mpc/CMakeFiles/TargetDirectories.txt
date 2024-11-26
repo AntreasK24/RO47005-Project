@@ -1,0 +1,9 @@
+/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc/CMakeFiles/uninstall.dir
+/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc/CMakeFiles/drone_mpc_uninstall.dir
+/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc/CMakeFiles/test.dir
+/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc/CMakeFiles/edit_cache.dir
+/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc/CMakeFiles/rebuild_cache.dir
+/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc/CMakeFiles/list_install_components.dir
+/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc/CMakeFiles/install.dir
+/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc/CMakeFiles/install/local.dir
+/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc/CMakeFiles/install/strip.dir

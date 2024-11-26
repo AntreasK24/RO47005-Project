@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>drone_simulator</name>
+  <version>0.0.0</version>
+  <description>A simple ROS2 wrapper over the pybullet drone simulator to control the drone with velocity messages</description>
+  <maintainer email="a.kourris@students.tudelft.nl">Antreas Kourris</maintainer>
+  <license>Apache-2.0</license>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <build_depend>numpy</build_depend>
+  <build_depend>time</build_depend>
+  <build_depend>gym_pybullet_drones</build_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
