@@ -53,10 +53,10 @@ RM = /home/antreas/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -E r
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/src/drone_mpc
+CMAKE_SOURCE_DIR = /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/drone_mpc
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc
+CMAKE_BINARY_DIR = /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/build/drone_mpc
 
 # Utility rule file for uninstall.
 
@@ -78,6 +78,6 @@ CMakeFiles/uninstall.dir/clean:
 .PHONY : CMakeFiles/uninstall.dir/clean
 
 CMakeFiles/uninstall.dir/depend:
-	cd /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/src/drone_mpc /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/src/drone_mpc /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/build/drone_mpc && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/drone_mpc /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/drone_mpc /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/build/drone_mpc /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/build/drone_mpc /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/build/drone_mpc/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/uninstall.dir/depend
 

@@ -2,7 +2,7 @@
 
 # since this file is sourced use either the provided AMENT_CURRENT_PREFIX
 # or fall back to the destination set at configure time
-: ${AMENT_CURRENT_PREFIX:="/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/install/drone_mpc"}
+: ${AMENT_CURRENT_PREFIX:="/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/install/drone_mpc"}
 if [ ! -d "$AMENT_CURRENT_PREFIX" ]; then
   if [ -z "$COLCON_CURRENT_PREFIX" ]; then
     echo "The compile time prefix path '$AMENT_CURRENT_PREFIX' doesn't " \

@@ -2,7 +2,7 @@
 # ament_cmake_core/cmake/uninstall_target/ament_cmake_uninstall_target.cmake.in
 
 function(ament_cmake_uninstall_target_remove_empty_directories path)
-  set(install_space "/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/install/drone_mpc")
+  set(install_space "/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/install/drone_mpc")
   if(install_space STREQUAL "")
     message(FATAL_ERROR "The CMAKE_INSTALL_PREFIX variable must not be empty")
   endif()
@@ -29,7 +29,7 @@ function(ament_cmake_uninstall_target_remove_empty_directories path)
 endfunction()
 
 # uninstall files installed using the standard install() function
-set(install_manifest "/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/ro47005_drone_simulator/build/drone_mpc/install_manifest.txt")
+set(install_manifest "/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/build/drone_mpc/install_manifest.txt")
 if(NOT EXISTS "${install_manifest}")
   message(FATAL_ERROR "Cannot find install manifest: ${install_manifest}")
 endif()

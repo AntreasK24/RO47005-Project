@@ -9,9 +9,8 @@ from geometry_msgs.msg import Twist,Pose
 from gym_pybullet_drones.envs import VelocityAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics
 
+import pybullet as p
 
-env = VelocityAviary(drone_model=DroneModel.CF2X, num_drones=1, physics=Physics.PYB, ctrl_freq=240, gui=True)
-obs = env.reset()  
 
 
 class DroneSimulator(Node):  
@@ -27,6 +26,27 @@ class DroneSimulator(Node):
         self.timer = self.create_timer(timer_period,self.timer_callback)
 
         self.velocity_subscriber
+        self.env = VelocityAviary(drone_model=DroneModel.CF2X, num_drones=1, physics=Physics.PYB, ctrl_freq=240, gui=True)
+        self.obs = self.env.reset()  
+
+        self.add_obstacles()
+
+    def add_obstacles(self):
+        self.create_obstacles(shape="cube",position=[1,1,0],scale=(0.5,0.5,0.5),color=(0,0,1,1))
+        self.create_obstacles(shape="cylinder",position=[1,0,0],scale=(0.1,1,2),color=(0,0.7,0.5,1))
+
+
+
+    def create_obstacles(self,shape="cube",position=[0,0,0],color=[1,0,0,1],scale=(1,1,1)):
+        if shape == 'cube':
+            collision_shape = p.createCollisionShape(p.GEOM_BOX,halfExtents=scale)
+            visual_shape = p.createVisualShape(p.GEOM_BOX, halfExtents=scale, rgbaColor=color) 
+        elif shape == 'cylinder':
+            collision_shape = p.createCollisionShape(p.GEOM_CYLINDER,radius=scale[0], height=scale[2])
+            visual_shape = p.createVisualShape(p.GEOM_CYLINDER, radius=scale[0], length=scale[2], rgbaColor=color)
+
+
+        p.createMultiBody(baseMass=0, baseCollisionShapeIndex=collision_shape, baseVisualShapeIndex=visual_shape, basePosition=position)
 
     #Variables for controlling drone 
     current_linear_velocity = np.array([[0.0, 0.0, 0.0, 1.0]])
@@ -45,7 +65,7 @@ class DroneSimulator(Node):
         #Give velocity commands to drone and publish position
         pose_message = Pose()
 
-        obs, reward, done, truncated, info = env.step(self.current_velocity)
+        obs, reward, done, truncated, info = self.env.step(self.current_velocity)
 
         position = obs[0][0:3]
         pose_message.position.x = position[0]
