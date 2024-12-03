@@ -1,0 +1,32 @@
+running egg_info
+creating ../../build/scenario_creator/scenario_creator.egg-info
+writing ../../build/scenario_creator/scenario_creator.egg-info/PKG-INFO
+writing dependency_links to ../../build/scenario_creator/scenario_creator.egg-info/dependency_links.txt
+writing entry points to ../../build/scenario_creator/scenario_creator.egg-info/entry_points.txt
+writing requirements to ../../build/scenario_creator/scenario_creator.egg-info/requires.txt
+writing top-level names to ../../build/scenario_creator/scenario_creator.egg-info/top_level.txt
+writing manifest file '../../build/scenario_creator/scenario_creator.egg-info/SOURCES.txt'
+reading manifest file '../../build/scenario_creator/scenario_creator.egg-info/SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file '../../build/scenario_creator/scenario_creator.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/scenario_creator/build
+creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/scenario_creator/build/lib
+creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/scenario_creator/build/lib/scenario_creator
+copying scenario_creator/__init__.py -> /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/scenario_creator/build/lib/scenario_creator
+running install
+running install_lib
+creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/scenario_creator/lib/python3.10/site-packages/scenario_creator
+copying /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/scenario_creator/build/lib/scenario_creator/__init__.py -> /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/scenario_creator/lib/python3.10/site-packages/scenario_creator
+byte-compiling /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/scenario_creator/lib/python3.10/site-packages/scenario_creator/__init__.py to __init__.cpython-310.pyc
+running install_data
+creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/scenario_creator/share/ament_index
+creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/scenario_creator/share/ament_index/resource_index
+creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/scenario_creator/share/ament_index/resource_index/packages
+copying resource/scenario_creator -> /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/scenario_creator/share/ament_index/resource_index/packages
+copying package.xml -> /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/scenario_creator/share/scenario_creator
+running install_egg_info
+Copying ../../build/scenario_creator/scenario_creator.egg-info to /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/scenario_creator/lib/python3.10/site-packages/scenario_creator-0.0.0-py3.10.egg-info
+running install_scripts
+writing list of installed files to '/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/scenario_creator/install.log'

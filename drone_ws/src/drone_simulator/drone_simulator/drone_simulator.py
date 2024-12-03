@@ -18,9 +18,9 @@ class DroneSimulator(Node):
     def __init__(self):
         super().__init__('drone_simulator')
         #Subscriber
-        self.velocity_subscriber = self.create_subscription(Twist,'/drone_velocity',self.velocity_callback,10)
+        self.velocity_subscriber = self.create_subscription(Twist,'/cmd_vel',self.velocity_callback,10)
         #Publisher
-        self.pose_publisher = self.create_publisher(Pose, '/drone_pose', 10)
+        self.pose_publisher = self.create_publisher(Pose, '/pose', 10)
         #Timer
         timer_period = 1.0/240.0
         self.timer = self.create_timer(timer_period,self.timer_callback)

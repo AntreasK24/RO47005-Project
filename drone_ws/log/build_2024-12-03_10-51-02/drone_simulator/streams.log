@@ -1,0 +1,38 @@
+[1.431s] Invoking command in '/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/src/drone_simulator': PYTHONPATH=/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/drone_simulator build --build-base /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/build install --record /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/install.log --single-version-externally-managed install_data
+[1.706s] running egg_info
+[1.707s] creating ../../build/drone_simulator/drone_simulator.egg-info
+[1.707s] writing ../../build/drone_simulator/drone_simulator.egg-info/PKG-INFO
+[1.707s] writing dependency_links to ../../build/drone_simulator/drone_simulator.egg-info/dependency_links.txt
+[1.707s] writing entry points to ../../build/drone_simulator/drone_simulator.egg-info/entry_points.txt
+[1.707s] writing requirements to ../../build/drone_simulator/drone_simulator.egg-info/requires.txt
+[1.708s] writing top-level names to ../../build/drone_simulator/drone_simulator.egg-info/top_level.txt
+[1.708s] writing manifest file '../../build/drone_simulator/drone_simulator.egg-info/SOURCES.txt'
+[1.709s] reading manifest file '../../build/drone_simulator/drone_simulator.egg-info/SOURCES.txt'
+[1.710s] adding license file 'LICENSE'
+[1.710s] writing manifest file '../../build/drone_simulator/drone_simulator.egg-info/SOURCES.txt'
+[1.711s] running build
+[1.711s] running build_py
+[1.711s] creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/build
+[1.711s] creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/build/lib
+[1.711s] creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/build/lib/drone_simulator
+[1.711s] copying drone_simulator/drone_simulator.py -> /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/build/lib/drone_simulator
+[1.711s] copying drone_simulator/__init__.py -> /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/build/lib/drone_simulator
+[1.711s] running install
+[1.712s] running install_lib
+[1.712s] creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/lib/python3.10/site-packages/drone_simulator
+[1.713s] copying /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/build/lib/drone_simulator/drone_simulator.py -> /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/lib/python3.10/site-packages/drone_simulator
+[1.713s] copying /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/build/lib/drone_simulator/__init__.py -> /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/lib/python3.10/site-packages/drone_simulator
+[1.713s] byte-compiling /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/lib/python3.10/site-packages/drone_simulator/drone_simulator.py to drone_simulator.cpython-310.pyc
+[1.714s] byte-compiling /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/lib/python3.10/site-packages/drone_simulator/__init__.py to __init__.cpython-310.pyc
+[1.715s] running install_data
+[1.715s] creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/share/ament_index
+[1.715s] creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/share/ament_index/resource_index
+[1.715s] creating /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/share/ament_index/resource_index/packages
+[1.715s] copying resource/drone_simulator -> /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/share/ament_index/resource_index/packages
+[1.715s] copying package.xml -> /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/share/drone_simulator
+[1.715s] running install_egg_info
+[1.717s] Copying ../../build/drone_simulator/drone_simulator.egg-info to /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/lib/python3.10/site-packages/drone_simulator-0.0.0-py3.10.egg-info
+[1.718s] running install_scripts
+[1.742s] Installing drone_simulator script to /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/lib/drone_simulator
+[1.742s] writing list of installed files to '/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/install.log'
+[1.774s] Invoked command in '/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/src/drone_simulator' returned '0': PYTHONPATH=/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/install/drone_simulator/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/drone_simulator build --build-base /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/build install --record /home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_simulator/install.log --single-version-externally-managed install_data
