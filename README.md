@@ -37,6 +37,8 @@ Download the project worspace by running:
 git clone git@github.com:AntreasK24/RO47005-Project.git
 cd drone_ws
 colcon build
+source /opt/ros/humble/setup.bash
+source install/setup.bash
 ```
 
 Check the workspace by running `ros2 run drone_simulator drone_simulator`.
