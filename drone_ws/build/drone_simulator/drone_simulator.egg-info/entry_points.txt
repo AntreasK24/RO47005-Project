@@ -1,3 +1,0 @@
-[console_scripts]
-drone_simulator = drone_simulator.drone_simulator:main
-

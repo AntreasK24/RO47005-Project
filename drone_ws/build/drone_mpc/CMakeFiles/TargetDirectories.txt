@@ -1,9 +1,0 @@
-/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_mpc/CMakeFiles/uninstall.dir
-/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_mpc/CMakeFiles/drone_mpc_uninstall.dir
-/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_mpc/CMakeFiles/test.dir
-/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_mpc/CMakeFiles/edit_cache.dir
-/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_mpc/CMakeFiles/rebuild_cache.dir
-/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_mpc/CMakeFiles/list_install_components.dir
-/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_mpc/CMakeFiles/install.dir
-/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_mpc/CMakeFiles/install/local.dir
-/home/mukil/MSc_Robotics/Quarter2/Planning_&_Decision_Making_(RO47005)/Project/RO47005-Project/drone_ws/build/drone_mpc/CMakeFiles/install/strip.dir
