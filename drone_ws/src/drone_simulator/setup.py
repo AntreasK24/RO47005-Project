@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'drone_simulator = drone_simulator.drone_simulator:main'
+            'drone_simulator = drone_simulator.drone_simulator:main',
+            'drone_simulator_rpm = drone_simulator.drone_simulator_rpm:main'
         ],
     },
 )
