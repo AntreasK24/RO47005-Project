@@ -31,7 +31,7 @@ class DroneSimulator(Node):
 
     def add_obstacles(self):
         self.create_obstacles(shape="cube",position=[1,1,0],scale=(0.5,0.5,0.5),color=(0,0,1,1))
-        self.create_obstacles(shape="cylinder",position=[1,0,0],scale=(0.1,1,2),color=(0,0.7,0.5,1))
+        self.create_obstacles(shape="cylinder",position=[1,0,0],scale=(0.1,1,2),color=(0,0.7,0.5,1))        
 
 
     def create_obstacles(self,shape="cube",position=[0,0,0],color=[1,0,0,1],scale=(1,1,1)):

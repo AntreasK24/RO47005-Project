@@ -1,0 +1,17 @@
+{
+    "ros.distro": "humble",
+    "python.autoComplete.extraPaths": [
+        "/home/mukil/MSc_Robotics/Quarter2/Planning_Decision_Making/Project/RO47005-Project/drone_ws/install/scenario_creator/lib/python3.10/site-packages",
+        "/home/mukil/MSc_Robotics/Quarter2/Planning_Decision_Making/Project/RO47005-Project/drone_ws/install/global_planner/lib/python3.10/site-packages",
+        "/home/mukil/MSc_Robotics/Quarter2/Planning_Decision_Making/Project/RO47005-Project/drone_ws/install/drone_simulator/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/mukil/MSc_Robotics/Quarter2/Planning_Decision_Making/Project/RO47005-Project/drone_ws/install/scenario_creator/lib/python3.10/site-packages",
+        "/home/mukil/MSc_Robotics/Quarter2/Planning_Decision_Making/Project/RO47005-Project/drone_ws/install/global_planner/lib/python3.10/site-packages",
+        "/home/mukil/MSc_Robotics/Quarter2/Planning_Decision_Making/Project/RO47005-Project/drone_ws/install/drone_simulator/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}
