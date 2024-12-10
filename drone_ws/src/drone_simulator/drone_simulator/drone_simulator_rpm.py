@@ -43,6 +43,7 @@ class DroneSimulator(Node):
             visual_shape = p.createVisualShape(p.GEOM_CYLINDER, radius=scale[0], length=scale[2], rgbaColor=color)
 
 
+
         p.createMultiBody(baseMass=0, baseCollisionShapeIndex=collision_shape, baseVisualShapeIndex=visual_shape, basePosition=position)
 
     motor_rpm = np.zeros((1, 4))
