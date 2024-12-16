@@ -1,9 +1,9 @@
 from casadi import *
 from acados_template import AcadosModel
-from casadi import SX, vertcat, sin, cos
+from casadi import SX, vertcat, sin, cos, tan
 
 def export_drone_ode_model() -> AcadosModel:
-    model_name = 'drone_ode'
+    model_name = 'drone_non_linear_ode'
     
     # Constants (for the drone model)
     # Mass of the drone [kg]
@@ -11,56 +11,90 @@ def export_drone_ode_model() -> AcadosModel:
 
     #Gravity [m/s^2]
     g = 9.81
-    # States: position and velocity in x, y, z
-    x1 = SX.sym('x1')  # position in x
-    x2 = SX.sym('x2')  # position in y
-    x3 = SX.sym('x3')  # position in z
-    v1 = SX.sym('v1')  # velocity in x
-    v2 = SX.sym('v2')  # velocity in y
-    v3 = SX.sym('v3')  # velocity in z
 
-    x = vertcat(x1, x2, x3, v1, v2, v3)
+    Ix = 1e-3
+    Iy = 1e-3
+    Iz = 1e-3
+
+    # States: {linear position, angular position} in world frame, {linear position, angular position} in body frame
+
+    x = SX.sym('x')  # linear position in world frame --> x
+    y = SX.sym('y')  # linear position in world frame --> y
+    z = SX.sym('z')  # linear position in world frame --> z
+
+    phi = SX.sym('phi')  # angular position in world frame --> phi Φ
+    theta = SX.sym('theta')  # angular position in world frame --> theta θ
+    psi = SX.sym('psi')  # angular position in world frame --> psi ψ
+
+    u = SX.sym('u')  # linear position in body frame --> u
+    v = SX.sym('v')  # linear position in body frame --> v
+    w = SX.sym('w')  # linear position in body frame --> w
+
+    p = SX.sym('p')  # angular position in body frame --> p
+    q = SX.sym('q')  # angular position in body frame --> q
+    r = SX.sym('r')  # angular position in body frame --> r
+
+    states = vertcat(x,y,z,phi,theta,psi,u,v,w,p,q,r)
     
-    # Control inputs: acceleration in x, y, z
-    ax = SX.sym('ax')
-    ay = SX.sym('ay')
-    az = SX.sym('az')
+    # Control inputs: thrust, torque in {x,y,z} body frame axes
+    ft = SX.sym('ft') # thrust force in z axis (up w.r.t body frame is positive)
+    tau_x = SX.sym('tau_x') # torque in x axis
+    tau_y = SX.sym('tau_y') # torque in y axis
+    tau_z = SX.sym('tau_z') # torque in z axis
     
-    u = vertcat(ax, ay, az)
+    inputs = vertcat(ft, tau_x, tau_y, tau_z)
 
     # Derivatives of states (xdot)
-    x1_dot = SX.sym('x1_dot')
-    x2_dot = SX.sym('x2_dot')
-    x3_dot = SX.sym('x3_dot')
-    v1_dot = SX.sym('v1_dot')
-    v2_dot = SX.sym('v2_dot')
-    v3_dot = SX.sym('v3_dot')
 
-    xdot = vertcat(x1_dot, x2_dot, x3_dot, v1_dot, v2_dot, v3_dot)
+    x_dot = SX.sym('x_dot')  # linear velocity in world frame --> x_dot
+    y_dot = SX.sym('y_dot')  # linear velocity in world frame --> y_dot
+    z_dot = SX.sym('z_dot')  # linear velocity in world frame --> z_dot
 
-    # Define system matrices A and B (for a linear system)
-    A = np.array([
-        [0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 0, 1],
-        [0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0]
-    ])
-    
-    B = np.array([
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0],
-        [1/m, 0, 0],
-        [0, 1/m, 0],
-        [0, 0, 1/m]
-    ])
+    phi_dot = SX.sym('phi_dot')  # angular velocity in world frame --> phi_dot Φ_dot
+    theta_dot = SX.sym('theta_dot')  # angular velocity in world frame --> theta_dot θ_dot
+    psi_dot = SX.sym('psi_dot')  # angular velocity in world frame --> psi_dot ψ_dot
 
-    G = np.array([0,0,0,0,0,-g])
+    u_dot = SX.sym('u_dot')  # linear velocity in body frame --> u_dot
+    v_dot = SX.sym('v_dot')  # linear velocity in body frame --> v_dot
+    w_dot = SX.sym('w_dot')  # linear velocity in body frame --> w_dot
 
-    # Define the state-space model as: x_dot = A * x + B * u
-    f_expl = A @ x + B @ u + G
+    p_dot = SX.sym('p_dot')  # angular velocity in body frame --> p_dot
+    q_dot = SX.sym('q_dot')  # angular velocity in body frame --> q_dot
+    r_dot = SX.sym('r_dot')  # angular velocity in body frame --> r_dot
+
+
+    xdot = vertcat(x_dot, y_dot, z_dot, phi_dot, theta_dot, psi_dot, u_dot, v_dot, w_dot, p_dot, q_dot, r_dot)
+
+    # Compute trignometric angles
+    sin_phi = sin(phi)
+    cos_phi = cos(phi)
+
+    sin_theta = sin(theta)
+    cos_theta = cos(theta)
+    tan_theta = tan(theta)
+
+    sin_psi = sin(psi)
+    cos_psi = cos(psi)
+
+    # Define change in states (non-linear dynamics equations)
+
+    f_expl = vertcat(w*(sin_phi*sin_psi + cos_phi*cos_psi*sin_theta) - v*(cos_phi*sin_psi - cos_psi*sin_phi*sin_theta) + u*(cos_psi*cos_theta),
+                     v*(cos_phi*cos_psi + sin_phi*sin_psi*sin_theta) - w*(cos_psi*sin_phi - cos_phi*sin_psi*sin_theta) + u*(cos_theta*cos_psi),
+                     w*(cos_phi*cos_theta) -u*(sin_theta) + v*(cos_theta*sin_phi),
+
+                     p + r*(cos_phi*tan_theta) + q(sin_phi*tan_theta),
+                     q*(cos_phi) - r*(sin_phi),
+                     r*(cos_phi/cos_theta) + q*(sin_phi/cos_theta),
+
+                     r*v - q*w - g*(sin_theta),
+                     p*w - r*u + g*(sin_phi*cos_theta),
+                     q*u - p*v + g*(cos_theta*cos_phi) - (ft/m),
+
+                    ((Iy-Iz)/Ix)*(r*q) + (tau_x/Ix),
+                    ((Iz-Ix)/Iy)*(p*r) + (tau_y/Iy),
+                    ((Ix-Iy)/Iz)*(p*q) + (tau_z/Iz)
+
+    )
 
     f_impl = xdot - f_expl  # Implicit dynamics (state derivative equals the dynamics)
 
@@ -69,14 +103,14 @@ def export_drone_ode_model() -> AcadosModel:
 
     model.f_impl_expr = f_impl
     model.f_expl_expr = f_expl
-    model.x = x
+    model.x = states
     model.xdot = xdot
-    model.u = u
+    model.u = inputs
     model.name = model_name
 
     # Store labels for the state, control input, and time
-    model.x_labels = ['$x$ [m]', '$y$ [m]', '$z$ [m]', '$v_x$ [m/s]', '$v_y$ [m/s]', '$v_z$ [m/s]']
-    model.u_labels = ['$a_x$ [m/s²]', '$a_y$ [m/s²]', '$a_z$ [m/s²]']
+    model.x_labels = ['$x$ [m]', '$y$ [m]', '$z$ [m]', '$phi$ [rad/s]', '$theta$ [rad/s]', '$psi$ [rad/s]', '$u$ [m]', '$v$ [m]', '$w$ [m]', '$p$ [rad/s]', '$q$ [rad/s]' '$r$ [rad/s]']
+    model.u_labels = ['$ft$ [N]', '$tau_x$ [Nm]', '$tau_y$ [Nm]', '$tau_z$ [Nm]']
     model.t_label = '$t$ [s]'
 
     return model
