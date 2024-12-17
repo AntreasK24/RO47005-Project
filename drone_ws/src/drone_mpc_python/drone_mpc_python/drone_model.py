@@ -9,9 +9,19 @@ def export_drone_ode_model() -> AcadosModel:
     # Mass of the drone [kg]
     m = 0.027 #got this from urdf file 
 
-    #Gravity [m/s^2]
+    # Gravity [m/s^2]
     g = 9.81
 
+    # Thrust factor
+    b = 1
+
+    # Drag factor
+    d = 1
+
+    # Distance b/w any rotor and the center of the drone
+    l = 1
+
+    # Inertia of the quadrotor in X,Y,Z axes
     Ix = 1e-3
     Iy = 1e-3
     Iz = 1e-3
@@ -36,13 +46,13 @@ def export_drone_ode_model() -> AcadosModel:
 
     states = vertcat(x,y,z,phi,theta,psi,u,v,w,p,q,r)
     
-    # Control inputs: thrust, torque in {x,y,z} body frame axes
-    ft = SX.sym('ft') # thrust force in z axis (up w.r.t body frame is positive)
-    tau_x = SX.sym('tau_x') # torque in x axis
-    tau_y = SX.sym('tau_y') # torque in y axis
-    tau_z = SX.sym('tau_z') # torque in z axis
-    
-    inputs = vertcat(ft, tau_x, tau_y, tau_z)
+    # Control inputs: rotor angular velocities
+    omega1 = SX.sym('omega1') # omega1
+    omega2 = SX.sym('omega2') # omega2
+    omega3 = SX.sym('omega3') # omega3
+    omega4 = SX.sym('omega4') # omega4
+
+    inputs = vertcat(omega1, omega2, omega3, omega4)
 
     # Derivatives of states (xdot)
 
@@ -75,6 +85,12 @@ def export_drone_ode_model() -> AcadosModel:
 
     sin_psi = sin(psi)
     cos_psi = cos(psi)
+    
+    # Control inputs: thrust, torque in {x,y,z} body frame axes
+    ft = b*(omega1**2+omega2**2+omega3**2+omega4**2) # thrust force in z axis (up w.r.t body frame is positive)
+    tau_x = b*l*(omega3**2 - omega1**2) # torque in x axis
+    tau_y = b*l*(omega4**2 - omega2**2) # torque in y axis
+    tau_z = d*(omega2**2+omega4**2-omega1**2-omega3**2) # torque in z axis
 
     # Define change in states (non-linear dynamics equations)
 
@@ -110,7 +126,7 @@ def export_drone_ode_model() -> AcadosModel:
 
     # Store labels for the state, control input, and time
     model.x_labels = ['$x$ [m]', '$y$ [m]', '$z$ [m]', '$phi$ [rad/s]', '$theta$ [rad/s]', '$psi$ [rad/s]', '$u$ [m]', '$v$ [m]', '$w$ [m]', '$p$ [rad/s]', '$q$ [rad/s]' '$r$ [rad/s]']
-    model.u_labels = ['$ft$ [N]', '$tau_x$ [Nm]', '$tau_y$ [Nm]', '$tau_z$ [Nm]']
+    model.u_labels = ['$omega1$ [rad/s]', '$omega2$ [rad/s]', '$omega3$ [rad/s]', '$omega4$ [rad/s]']
     model.t_label = '$t$ [s]'
 
     return model
