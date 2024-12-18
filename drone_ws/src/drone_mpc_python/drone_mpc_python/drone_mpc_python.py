@@ -1,7 +1,9 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Pose, Twist, Point
+from std_msgs.msg import Float64MultiArray
 import numpy as np
+import transforms3d
 from drone_mpc_python.mpcDroneSolver import DroneMPCSolver
 
 class DroneMPCNode(Node):
@@ -13,8 +15,8 @@ class DroneMPCNode(Node):
         self.drone_solver = DroneMPCSolver()
 
         #Set initial state and default target position (this  could be a ROS param)
-        self.initial_state = np.array([0.0,0.0,0.1125,0.0,0.0,0.0])
-        self.target_pos = np.array([1.0,1.0,1.0])
+        self.initial_state = np.array([0.0,0.0,0.1125,0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0])
+        self.target_pos = np.array([3.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])  
 
         #Setup solver
         self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos)
@@ -24,7 +26,7 @@ class DroneMPCNode(Node):
 
         #Subscribers
         self.current_pose_sub = self.create_subscription(Pose,'/pose',self.current_pose_callback,10)
-        self.target_position_sub = self.create_subscription(Point,'/target_pos',self.target_position_callback,10)
+        self.target_position_sub = self.create_subscription(Float64MultiArray,'/target_pos',self.target_position_callback,10)
 
         #Timer
         #Time step based on MPC Tf/N_horizon
@@ -33,13 +35,19 @@ class DroneMPCNode(Node):
 
     def current_pose_callback(self,msg):
         self.initial_state[:3] = np.array([msg.position.x, msg.position.y, msg.position.z])
-        self.initial_state[3:] = np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z]) 
+
+        quaternion = [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
+        roll, pitch, yaw = transforms3d.euler.quat2euler(quaternion)
+        self.initial_state[6] = roll
+        self.initial_state[7] = pitch
+        self.initial_state[8] = yaw
+
 
     def target_position_callback(self,msg):
         
         #Update target position only if it is different from previous one
 
-        new_target_pos = np.array([msg.x,msg.y,msg.z])
+        new_target_pos = np.array(msg.data)
 
         if not np.array_equal(self.target_pos,new_target_pos):
             self.get_logger().info(f"Received new target position: {new_target_pos}")
@@ -56,13 +64,18 @@ class DroneMPCNode(Node):
 
         #Solve optimization problem and get first control input
         control_input = self.drone_solver.solve(self.initial_state, self.target_pos)
-        self.get_logger().info(f"Target position: {self.target_pos}, Current position: {self.initial_state[:3]}, Velocity: {self.initial_state[3:]}")
+        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}")
         
         #Publish the velocity
         velocity_msg = Twist()
         velocity_msg.linear.x += control_input[0] * self.dt
         velocity_msg.linear.y += control_input[1] * self.dt
         velocity_msg.linear.z += control_input[2] * self.dt
+
+        velocity_msg.angular.x += control_input[3] * self.dt
+        velocity_msg.angular.y += control_input[4] * self.dt
+        velocity_msg.angular.z += control_input[5] * self.dt 
+
 
         self.velocity_pub.publish(velocity_msg)
 
