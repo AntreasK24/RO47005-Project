@@ -67,33 +67,36 @@ def export_drone_ode_model() -> AcadosModel:
 
     xdot = vertcat(x_dot, y_dot, z_dot, k_dot, v_dot, w_dot, psi_dot, theta_dot, phi_dot, p_dot_dyn, q_dot_dyn, r_dot_dyn)
 
+
+    #I do not remember why I defined all this (I will keep it here for now)
     acc = vertcat(ax, ay, az)
-
     F_gravity = vertcat(0, 0, -m*g)
-
     F_drag = vertcat(
         -drag_coeff * k**2,  # drag in x
         -drag_coeff * v**2,  # drag in y
         -drag_coeff * w**2   # drag in z
     )
-
-    f_trans = vertcat(k, v, w)
     thrust = m * g + m * (ax**2 + ay**2 + az**2)
-
-    v_dot = vertcat(
-        (ax - drag_coeff * k) / m,
-        (ay - drag_coeff * v) / m,
-        (az - drag_coeff * w - g) / m
-    )
-
     I = vertcat(Ix, Iy, Iz)
-
     moment = vertcat(
         Ix * p_dot + (Iz - Iy) * q * r,
         Iy * q_dot + (Ix - Iz) * p * r,
         Iz * r_dot + (Iy - Ix) * p * q
     )
 
+
+    #Dynamics of translational movment 
+    f_trans = vertcat(k, v, w)
+    v_dot = vertcat(
+        ax - (drag_coeff * k) / m,
+        ay - (drag_coeff * v) / m,
+        az - (drag_coeff * w - g) / m
+    )
+
+
+    
+
+    #This isn't a force 
     f_rot = vertcat(
         p + q*sin(phi)*tan(theta) + r*cos(phi)*tan(theta),  # phi dot
         q*cos(phi) - r*sin(phi),  # theta dot
@@ -101,14 +104,16 @@ def export_drone_ode_model() -> AcadosModel:
     )
 
     
+    omega_dot = vertcat(p_dot,q_dot,r_dot)
+    f_expl = vertcat(f_trans,v_dot,f_rot,omega_dot)
+    f_impl = xdot - f_expl
 
-    f_impl = xdot - vertcat(f_trans, v_dot, f_rot,moment)
 
     # Define the model
     model = AcadosModel()
 
     model.f_impl_expr = f_impl
-    model.f_expl_expr = vertcat(f_trans, v_dot, f_rot,moment)
+    model.f_expl_expr = f_expl
     model.x = x
     model.xdot = xdot
     model.u = u
