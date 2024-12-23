@@ -1,8 +1,9 @@
 from casadi import *
 from acados_template import AcadosModel
 from casadi import SX, vertcat, sin, cos, tan
+from scipy.spatial.transform import Rotation
 
-def export_drone_ode_model() -> AcadosModel:
+def export_drone_ode_model(is_quaternion=True) -> AcadosModel:
     model_name = 'drone_non_linear_ode'
     
     # Constants (for the drone model)
@@ -13,25 +14,25 @@ def export_drone_ode_model() -> AcadosModel:
     g = 9.81
 
     # Thrust factor
-    b = 1
+    b = 1 #dummy value
 
     # Drag factor
-    d = 1
+    d = 1 #dummy value
 
     # Distance b/w any rotor and the center of the drone
-    l = 1
+    l = 1 #dummy value
 
     # Inertia of the quadrotor in X,Y,Z axes
-    Ix = 1e-3
-    Iy = 1e-3
-    Iz = 1e-3
+    Ix = 1e-3 #dummy value
+    Iy = 1e-3 #dummy value
+    Iz = 1e-3 #dummy value
 
     # States: {linear position, angular position} in world frame, {linear position, angular position} in body frame
-
     x = SX.sym('x')  # linear position in world frame --> x
     y = SX.sym('y')  # linear position in world frame --> y
     z = SX.sym('z')  # linear position in world frame --> z
 
+    # Angular position in the world frame (in Euler angle representation)
     phi = SX.sym('phi')  # angular position in world frame --> phi Φ
     theta = SX.sym('theta')  # angular position in world frame --> theta θ
     psi = SX.sym('psi')  # angular position in world frame --> psi ψ
@@ -40,11 +41,23 @@ def export_drone_ode_model() -> AcadosModel:
     v = SX.sym('v')  # linear position in body frame --> v
     w = SX.sym('w')  # linear position in body frame --> w
 
+    # Angular position in the body frame (in Euler angle representation)
     p = SX.sym('p')  # angular position in body frame --> p
     q = SX.sym('q')  # angular position in body frame --> q
     r = SX.sym('r')  # angular position in body frame --> r
 
-    states = vertcat(x,y,z,phi,theta,psi,u,v,w,p,q,r)
+    # Angular positions (in Quaternion representation)
+    if is_quaternion == True:
+        w_euler_rot = Rotation.from_euler('xyz', [phi,theta,psi], degrees=False)
+        w_qx,w_qy,w_qz,w_qw = w_euler_rot.as_quat()
+
+        b_euler_rot = Rotation.from_euler('xyz', [p,q,r], degrees=False)
+        b_qx,b_qy,b_qz,b_qw = b_euler_rot.as_quat()
+
+        states = vertcat(x,y,z,w_qx,w_qy,w_qz,w_qw,u,v,w,b_qx,b_qy,b_qz,b_qw)
+    else:
+        states = vertcat(x,y,z,phi,theta,psi,u,v,w,p,q,r)
+
     
     # Control inputs: rotor angular velocities
     omega1 = SX.sym('omega1') # omega1
@@ -72,6 +85,17 @@ def export_drone_ode_model() -> AcadosModel:
     q_dot = SX.sym('q_dot')  # angular velocity in body frame --> q_dot
     r_dot = SX.sym('r_dot')  # angular velocity in body frame --> r_dot
 
+    # Angular velocities (in Quaternion representation)
+    if is_quaternion == True:
+        w_euler_rot = Rotation.from_euler('xyz', [phi,theta,psi], degrees=False)
+        w_qx,w_qy,w_qz,w_qw = w_euler_rot.as_quat()
+
+        b_euler_rot = Rotation.from_euler('xyz', [p,q,r], degrees=False)
+        b_qx,b_qy,b_qz,b_qw = b_euler_rot.as_quat()
+
+        states = vertcat(x,y,z,w_qx,w_qy,w_qz,w_qw,u,v,w,b_qx,b_qy,b_qz,b_qw)
+    else:
+        states = vertcat(x,y,z,phi,theta,psi,u,v,w,p,q,r)
 
     xdot = vertcat(x_dot, y_dot, z_dot, phi_dot, theta_dot, psi_dot, u_dot, v_dot, w_dot, p_dot, q_dot, r_dot)
 
