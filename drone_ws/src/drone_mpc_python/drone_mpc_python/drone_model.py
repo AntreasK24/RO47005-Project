@@ -3,7 +3,7 @@ from acados_template import AcadosModel
 from casadi import SX, vertcat, sin, cos, tan
 from scipy.spatial.transform import Rotation
 
-def export_drone_ode_model(is_quaternion=True) -> AcadosModel:
+def export_drone_ode_model(is_quaternion=False) -> AcadosModel:
     model_name = 'drone_non_linear_ode'
     
     # Constants (for the drone model)
@@ -17,10 +17,10 @@ def export_drone_ode_model(is_quaternion=True) -> AcadosModel:
     b = 1 #dummy value
 
     # Drag factor
-    d = 1 #dummy value
+    d = 0 #dummy value
 
     # Distance b/w any rotor and the center of the drone
-    l = 1 #dummy value
+    l = 0.1 #dummy value
 
     # Inertia of the quadrotor in X,Y,Z axes
     Ix = 1e-3 #dummy value
@@ -122,7 +122,7 @@ def export_drone_ode_model(is_quaternion=True) -> AcadosModel:
                      v*(cos_phi*cos_psi + sin_phi*sin_psi*sin_theta) - w*(cos_psi*sin_phi - cos_phi*sin_psi*sin_theta) + u*(cos_theta*cos_psi),
                      w*(cos_phi*cos_theta) -u*(sin_theta) + v*(cos_theta*sin_phi),
 
-                     p + r*(cos_phi*tan_theta) + q(sin_phi*tan_theta),
+                     p + r*(cos_phi*tan_theta) + q*(sin_phi*tan_theta),
                      q*(cos_phi) - r*(sin_phi),
                      r*(cos_phi/cos_theta) + q*(sin_phi/cos_theta),
 
