@@ -1,8 +1,9 @@
 from casadi import *
 from acados_template import AcadosModel
 from casadi import SX, vertcat, sin, cos, tan
+import numpy as np
 
-def export_drone_ode_model() -> AcadosModel:
+def export_drone_ode_model(is_state_noise=False, is_input_noise=False) -> AcadosModel:
     model_name = 'drone_non_linear_ode'
     
     # Constants (for the drone model)
@@ -15,6 +16,10 @@ def export_drone_ode_model() -> AcadosModel:
     Ix = 1e-3
     Iy = 1e-3
     Iz = 1e-3
+
+    # Noise parameters
+    mu_states = 0.5
+    mu_inputs = 0.5
 
     # States: {linear position, angular position} in world frame, {linear position, angular position} in body frame
 
@@ -35,7 +40,7 @@ def export_drone_ode_model() -> AcadosModel:
     r = SX.sym('r')  # angular position in body frame --> r
 
     states = vertcat(x,y,z,phi,theta,psi,u,v,w,p,q,r)
-    
+
     # Control inputs: thrust, torque in {x,y,z} body frame axes
     ft = SX.sym('ft') # thrust force in z axis (up w.r.t body frame is positive)
     tau_x = SX.sym('tau_x') # torque in x axis
@@ -82,7 +87,7 @@ def export_drone_ode_model() -> AcadosModel:
                      v*(cos_phi*cos_psi + sin_phi*sin_psi*sin_theta) - w*(cos_psi*sin_phi - cos_phi*sin_psi*sin_theta) + u*(cos_theta*cos_psi),
                      w*(cos_phi*cos_theta) -u*(sin_theta) + v*(cos_theta*sin_phi),
 
-                     p + r*(cos_phi*tan_theta) + q(sin_phi*tan_theta),
+                     p + r*(cos_phi*tan_theta) + q*(sin_phi*tan_theta),
                      q*(cos_phi) - r*(sin_phi),
                      r*(cos_phi/cos_theta) + q*(sin_phi/cos_theta),
 
@@ -95,6 +100,15 @@ def export_drone_ode_model() -> AcadosModel:
                     ((Ix-Iy)/Iz)*(p*q) + (tau_z/Iz)
 
     )
+
+    # With Additive gaussian noise in measurements and actuators
+    if is_state_noise == True:
+        state_dims = len(x_dot)
+        x_dot = x_dot + mu_states*np.random.multivariate_normal(mean=np.zeros(state_dims), cov=np.eye(state_dims), size=state_dims).T #  x_dot = x_dot + state_noise_weight*(standard multi-variate normal distribution) i.e., zero mean and unit standart deviation
+
+    if is_input_noise == True:
+        input_dims = len(inputs)
+        inputs = inputs + mu_inputs*np.random.multivariate_normal(mean=np.zeros(input_dims), cov=np.eye(input_dims), size=input_dims).T #  inputs = inputs + input_noise_weight*(standard multi-variate normal distribution) i.e., zero mean and unit standart deviation
 
     f_impl = xdot - f_expl  # Implicit dynamics (state derivative equals the dynamics)
 
