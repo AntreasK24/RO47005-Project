@@ -1,8 +1,9 @@
 from casadi import *
 from acados_template import AcadosModel
-from casadi import SX, vertcat, sin, cos
+from casadi import SX, vertcat, sin, cos, tan
+import numpy as np
 
-def export_drone_ode_model() -> AcadosModel:
+def export_drone_ode_model(is_state_noise=False, is_input_noise=False) -> AcadosModel:
     model_name = 'drone_ode'
     
     # Constants (for the drone model)
@@ -20,6 +21,9 @@ def export_drone_ode_model() -> AcadosModel:
     Iy = 0.001
     Iz = 0.001
 
+    # Noise parameters
+    mu_states = 0.5
+    mu_inputs = 0.5
 
     #States
     x = SX.sym('x')
@@ -37,7 +41,6 @@ def export_drone_ode_model() -> AcadosModel:
     p = SX.sym('p')
     q = SX.sym('q')
     r = SX.sym('r')
-
 
     x = vertcat(x,y,z,k,v,w,phi,theta,psi,p,q,r)
 
@@ -67,7 +70,6 @@ def export_drone_ode_model() -> AcadosModel:
 
     xdot = vertcat(x_dot, y_dot, z_dot, k_dot, v_dot, w_dot, psi_dot, theta_dot, phi_dot, p_dot_dyn, q_dot_dyn, r_dot_dyn)
 
-
     #I do not remember why I defined all this (I will keep it here for now)
     acc = vertcat(ax, ay, az)
     F_gravity = vertcat(0, 0, -m*g)
@@ -84,7 +86,6 @@ def export_drone_ode_model() -> AcadosModel:
         Iz * r_dot + (Iy - Ix) * p * q
     )
 
-
     #Dynamics of translational movment 
     f_trans = vertcat(k, v, w)
     v_dot = vertcat(
@@ -92,9 +93,6 @@ def export_drone_ode_model() -> AcadosModel:
         ay - (drag_coeff * v) / m,
         az - (drag_coeff * w - g) / m
     )
-
-
-    
 
     #This isn't a force 
     f_rot = vertcat(
@@ -108,6 +106,14 @@ def export_drone_ode_model() -> AcadosModel:
     f_expl = vertcat(f_trans,v_dot,f_rot,omega_dot)
     f_impl = xdot - f_expl
 
+    # With Additive gaussian noise in measurements and actuators
+    if is_state_noise == True:
+        state_dims = len(x_dot)
+        x_dot = x_dot + mu_states*np.random.multivariate_normal(mean=np.zeros(state_dims), cov=np.eye(state_dims), size=state_dims).T #  x_dot = x_dot + state_noise_weight*(standard multi-variate normal distribution) i.e., zero mean and unit standart deviation
+        
+    if is_input_noise == True:
+        input_dims = len(inputs)
+        inputs = inputs + mu_inputs*np.random.multivariate_normal(mean=np.zeros(input_dims), cov=np.eye(input_dims), size=input_dims).T #  inputs = inputs + input_noise_weight*(standard multi-variate normal distribution) i.e., zero mean and unit standart deviation
 
     # Define the model
     model = AcadosModel()
