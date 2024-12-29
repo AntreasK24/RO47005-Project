@@ -1,3 +1,25 @@
+
+import numpy as np
+
+def f(x, rng): 
+    return rng.integers(1,10 )
+#Intialise a random number generator
+rng = np.random.default_rng(2021)
+#pass the rng to functions which you would like to use it
+random_number = f(1, rng)
+print(random_number)
+
+random_number = f(1, rng)
+print(random_number)
+
+random_number = f(1, rng)
+print(random_number)
+
+random_number = f(1, rng)
+print(random_number)
+
+
+'''
 import matplotlib.pyplot as plt
 def calculate_column_positions(foundation_length, foundation_width):
 
@@ -52,3 +74,4 @@ for pos in column_positions:
 #plt.scatter(column_positions)
 plt.show()
 
+'''
