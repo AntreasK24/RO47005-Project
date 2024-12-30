@@ -80,7 +80,7 @@ class DroneSimulator(Node):
         
         ##### DYNAMIC OBSTACLES
             # Create a dynamic obstacle
-        self.dynamic_obstacle = Obstacle(color=[0, 1, 0, 0.5], dynamic=True)
+        self.dynamic_obstacle = Obstacle(position=[0,2.0,0.5],color=[0, 1, 0, 0.5], dynamic=True)
         obstacle_info = self.dynamic_obstacle.create()
         self.dynamic_obstacles.append(obstacle_info) 
             #self.dynamic_obstacles.extend(obstacle_info) if self.dynamic_obstacles is not None else self.dynamic_obstacles.append(obstacle_info) 
@@ -144,7 +144,6 @@ class DroneSimulator(Node):
             dynamic_obstacles_msg.obstacles.append(dynamic_obstacle)
 
         self.dynamic_obstacles_publisher.publish(dynamic_obstacles_msg)
-
         
     def get_pose_from_obstacle(self, obstacle):
         # Convert obstacle position and orientation to Pose
@@ -160,7 +159,7 @@ class DroneSimulator(Node):
         ##### UPDATE obstacles
             # Calculate new position using a sine wave for smooth movement
         x_position = math.sin(self.time) * 2  # Oscillate between -2 and 2 along the x-axis
-        self.dynamic_obstacle.update_pose(position=[x_position, 0, 0.5])
+        self.dynamic_obstacle.update_pose(position=[x_position, 2.0, 0.5])
         
         #new_waypoints = self.path_points + np.array([[0,0,0],[0,0,x_position*0.1],[0,0,x_position*0.1]])
         #new_waypoints[0,:] = self.drone_position
