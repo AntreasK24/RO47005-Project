@@ -1,4 +1,28 @@
+import pybullet as p
+import pybullet_data
 
+# Connect to PyBullet
+p.connect(p.GUI)
+p.setAdditionalSearchPath(pybullet_data.getDataPath())
+
+# Create a plane and some obstacles
+p.loadURDF("plane.urdf")
+p.loadURDF("cube.urdf", [0, 0, 1])
+p.loadURDF("cube.urdf", [1, 1, 1])
+
+# Get all obstacles
+num_bodies = p.getNumBodies()
+obstacles = [p.getBodyUniqueId(i) for i in range(num_bodies)]
+
+# Print details
+print("All obstacles in the environment:", obstacles)
+for body_id in obstacles:
+    body_name = p.getBodyInfo(body_id)[1].decode('utf-8')
+    print(f"Body ID: {body_id}, Name: {body_name}")
+
+
+
+'''
 import numpy as np
 
 def f(x, rng): 
@@ -17,7 +41,7 @@ print(random_number)
 
 random_number = f(1, rng)
 print(random_number)
-
+'''
 
 '''
 import matplotlib.pyplot as plt

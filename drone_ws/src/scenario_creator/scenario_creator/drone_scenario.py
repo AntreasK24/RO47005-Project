@@ -8,10 +8,11 @@ import numpy as np
 # Adding ROS functionalities and drone interaction
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist,Pose
+from geometry_msgs.msg import Twist,Pose,PoseArray
+from std_msgs.msg import String
+import drone_msgs.msg # import Obstacle, ObstacleArray
 from gym_pybullet_drones.envs import VelocityAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics
-
 
 
 
@@ -19,27 +20,49 @@ class DroneSimulator(Node):
     #Constructor
     def __init__(self):
         super().__init__('drone_simulator')
+        
         #Subscriber
         self.velocity_subscriber = self.create_subscription(Twist,'/cmd_vel',self.velocity_callback,10)
-        # TODO: self.waypoint_subscriber = self.create_subscription(Twist,'/cmd_vel',self.waypoint_callback,10)
+        self.waypoint_subscriber = self.create_subscription(PoseArray,'/waypoints',self.waypoint_callback,1)
+        
         #Publisher
         self.pose_publisher = self.create_publisher(Pose, '/pose', 10)
-        # TODO self.static_obstacles_publisher = self.create_publisher(Pose, '/static_obstacles', 10)
-        # TODO timer_obstacles
-        # TODO self.dynamic_obstacles_publisher = self.create_publisher(Pose, '/dynamic_obstacles', 10)
-        
-        # Timer to publish and update dynamic obstacles
-        self.timer_period = 1.0/240.0
-        self.time = 0.0
-        self.timer = self.create_timer(self.timer_period,self.timer_simulation)
+        self.static_obstacles_publisher = self.create_publisher(drone_msgs.msg.ObstacleArray, '/static_obstacles', 10)
+        self.dynamic_obstacles_publisher = self.create_publisher(drone_msgs.msg.ObstacleArray, '/dynamic_obstacles', 10)
 
-        self.velocity_subscriber
+        # Timer to publish drone poses and update obstacle lists
+        self.timer_period = 1.0/240.0
+        self.timer = self.create_timer(self.timer_period,self.timer_simulation)
+        self.static_obstacle_timer = self.create_timer(5, self.timer_static_obstacles)
+            # TODO: let static obstacles be handled by a service
+        self.dynamic_obstacle_timer = self.create_timer(0.5, self.timer_dynamic_obstacles)
+
+        # Setting up the Enviroment
         self.env = VelocityAviary(drone_model=DroneModel.CF2X, num_drones=1, physics=Physics.PYB, ctrl_freq=240, gui=True)
         self.obs = self.env.reset()  
 
 
+        #Variables for controlling drone 
+        self.current_linear_velocity = np.array([[0.0, 0.0, 0.0, 1.0]])
+        self.current_angular_velocity = np.array([[0.0, 0.0, 0.0]])
+        self.current_velocity = np.hstack((self.current_linear_velocity,self.current_angular_velocity))
 
-        ######## Obstacle and Environment Creation:
+        self.drone_position = None
+        self.path = None
+
+        self.time = 0.0
+
+        self.static_obstacles = []  # List to track static obstacles
+        self.dynamic_obstacles = []  # List to track dynamic obstacles
+        self.waypoints = [] # List of the current planned waypoints
+
+        # Create obstacles
+        self.setup_environment()
+
+    def setup_environment(self):
+        
+        ##### STATC OBSTACLES
+            # Create a building (static obstacles)
         self.building = Building(
             storeys=2,
             position=[-2, -2, 0],
@@ -48,26 +71,19 @@ class DroneSimulator(Node):
             #    "ceiling_kwargs": {"color": [0.2, 0.2, 0.8, 0.6]},
             #},
         )
-        self.building.create()
-
-
-        self.dynamic_obstacle = Obstacle(color=[0,1,0,0.5], dynamic=True)
-        self.dynamic_obstacle.create()
-
-
-        # Visualize a path 
-        self.path_points = np.array([[0, 0, 0], [1, 1, 0.5], [2, 2, 1.5]])
-        self.path = PathVisual(self.path_points)
-
-
-
-    #Variables for controlling drone 
-    current_linear_velocity = np.array([[0.0, 0.0, 0.0, 1.0]])
-    current_angular_velocity = np.array([[0.0, 0.0, 0.0]])
-    current_velocity = np.hstack((current_linear_velocity,current_angular_velocity))
-
-    drone_position = None
-
+        building_info = self.building.create()
+        self.static_obstacles.extend(building_info) if self.static_obstacles is not None else self.static_obstacles.append(building_info) 
+        ''' for object in building_info:
+            print(object)
+            print('-------------------------------------')
+        '''
+        
+        ##### DYNAMIC OBSTACLES
+            # Create a dynamic obstacle
+        self.dynamic_obstacle = Obstacle(color=[0, 1, 0, 0.5], dynamic=True)
+        obstacle_info = self.dynamic_obstacle.create()
+        self.dynamic_obstacles.append(obstacle_info) 
+            #self.dynamic_obstacles.extend(obstacle_info) if self.dynamic_obstacles is not None else self.dynamic_obstacles.append(obstacle_info) 
 
     def velocity_callback(self,msg):
         #Get linear and angular velocity and stack them into a single vector
@@ -77,26 +93,82 @@ class DroneSimulator(Node):
     
     def waypoint_callback(self,msg):
 
-        pass
+        # Visualize a path - Example 
+        #self.path_points = np.array([[0, 0, 0], [1, 1, 0.5], [2, 2, 1.5]])
+        # msg is a List of 3D Points (geometry_msgs/msg/PoseArray - ignoring orientation)
+        points = []
+        points.append(self.drone_position)
+
+        for pose in msg.poses:
+            position = []
+            position.append(pose.position.x)
+            position.append(pose.position.y)
+            position.append(pose.position.z)
+            points.append(position)
+
+        self.waypoints = points
+        if self.path is not None:
+            self.path.update(self.waypoints)
+        else:
+            self.path = PathVisual(self.waypoints)
         
-    def timer_obstacles(self):
-        pass
+    def timer_static_obstacles(self):
+
+        # Publish static obstacles
+        static_obstacles_msg = drone_msgs.msg.ObstacleArray()
+        for obstacle in self.static_obstacles:
+            static_obstacle = drone_msgs.msg.Obstacle()
+            static_obstacle.shape = obstacle["geom_shape"]
+            static_obstacle.pose = self.get_pose_from_obstacle(obstacle)
+            if obstacle["geom_shape"] == "cylinder":
+                static_obstacle.size = [obstacle["length"],obstacle["radius"]]
+            else:    
+                static_obstacle.size =  obstacle["size"]
+
+            static_obstacles_msg.obstacles.append(static_obstacle)
+
+        self.static_obstacles_publisher.publish(static_obstacles_msg)
+
+    def timer_dynamic_obstacles(self):
+        # Publish dynamic obstacles
+        dynamic_obstacles_msg = drone_msgs.msg.ObstacleArray()
+        for obstacle in self.dynamic_obstacles:
+            dynamic_obstacle = drone_msgs.msg.Obstacle()
+            dynamic_obstacle.shape = obstacle["geom_shape"]
+            dynamic_obstacle.pose = self.get_pose_from_obstacle(obstacle)
+            if obstacle["geom_shape"] == "cylinder":
+                dynamic_obstacle.size = [obstacle["length"],obstacle["radius"]]
+            else:    
+                dynamic_obstacle.size =  obstacle["size"]
+
+            dynamic_obstacles_msg.obstacles.append(dynamic_obstacle)
+
+        self.dynamic_obstacles_publisher.publish(dynamic_obstacles_msg)
+
+        
+    def get_pose_from_obstacle(self, obstacle):
+        # Convert obstacle position and orientation to Pose
+        position, orientation = p.getBasePositionAndOrientation(obstacle["id"])
+        pose = Pose()
+        pose.position.x, pose.position.y, pose.position.z = position
+        pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w = orientation
+        return pose
 
     def timer_simulation(self):
         p.stepSimulation()
 
         ##### UPDATE obstacles
-        # Calculate new position using a sine wave for smooth movement
+            # Calculate new position using a sine wave for smooth movement
         x_position = math.sin(self.time) * 2  # Oscillate between -2 and 2 along the x-axis
-        self.dynamic_obstacle.update_pose(position=[x_position, 0, 0.5],orientation=[0, 0, 0, 1])
-
-        new_waypoints = self.path_points + np.array([[0,0,0],[0,0,x_position*0.1],[0,0,x_position*0.1]])
-        new_waypoints[0,:] = self.drone_position
-        self.path.update(new_waypoints)
+        self.dynamic_obstacle.update_pose(position=[x_position, 0, 0.5])
+        
+        #new_waypoints = self.path_points + np.array([[0,0,0],[0,0,x_position*0.1],[0,0,x_position*0.1]])
+        #new_waypoints[0,:] = self.drone_position
+        #self.path.update(new_waypoints)
 
 
         ##### UPDATE drone
-        #Give velocity commands to drone and publish position
+            #Give velocity commands to drone and publish position
         pose_message = Pose()
 
         obs, reward, done, truncated, info = self.env.step(self.current_velocity)
@@ -114,6 +186,11 @@ class DroneSimulator(Node):
         pose_message.orientation.w = quaternion[3]
 
         self.pose_publisher.publish(pose_message)
+
+        ###### UPDATE waypoints
+        if self.path is not None:
+            self.waypoints[0] = self.drone_position
+            self.path.update(self.waypoints)
 
         # TODO self.dynamic_obstacles_publisher.publish()
 
@@ -170,6 +247,8 @@ class Obstacle():
             basePosition=self.position,
         )
         self.id = self.body
+        return self.__dict__
+
     
     def update_pose(self,
                     position=None,
@@ -185,6 +264,9 @@ class Obstacle():
                     posObj=position,
                     ornObj=orientation,
                 )
+                self.position = position
+                self.rotation = orientation
+                return self.__dict__
         else:
             print("Trying to move a static object")
 
@@ -205,6 +287,9 @@ class Storey():
         self.column_positions = self.calculate_column_positions(self.x_length, self.y_length)
         self.ceiling_thickness /= 2
 
+        self.objects = []
+
+
     def calculate_column_positions(self, x_length, y_length):
         margin = 1  # Distance from edges to column center
         num_columns_x = int((x_length - 2 * margin) / 4) + 1
@@ -221,13 +306,14 @@ class Storey():
     def create(self):
         # Create columns
         for pos in self.column_positions:
-            obstacle = Obstacle(
+            column = Obstacle(
                 position=[pos[0] + self.position[0], pos[1] + self.position[1], self.height / 2 + self.position[2]],
                 length=self.height,
                 geom_shape="cylinder",
                 **self.column_kwargs,
             )
-            obstacle.create()
+            col_info = column.create()
+            self.objects.append(col_info)
 
         # Create ceiling
         ceiling = Obstacle(
@@ -240,7 +326,10 @@ class Storey():
             geom_shape="cuboid",
             **self.ceiling_kwargs,
         )
-        ceiling.create()
+        ceiling_info = ceiling.create()
+        self.objects.append(ceiling_info)
+        
+        return self.objects
 
 class Building():
     def __init__(self, **kwargs):
@@ -254,6 +343,7 @@ class Building():
         defaults.update(kwargs)
         self.__dict__.update(defaults)
 
+        self.objects = []
 
     def create(self):
         for i in range(self.storeys):
@@ -268,9 +358,11 @@ class Building():
                 ceiling_thickness=self.storey_ceiling_thickness,
                 **self.storey_kwargs,
             )
-            storey.create()
+            storey_info = storey.create()
+            
+            self.objects.extend(storey_info) if self.objects is not None else self.objects.append(storey_info)
 
-# TODO: Seperate Marker class to mark start and goal of the path
+        return self.objects
 
 class PathVisual:
     def __init__(self, waypoints=None, line_color=[0, 1, 0], point_color=[1, 0, 0, 1], line_width=2, point_radius=0.02):
@@ -328,7 +420,7 @@ class PathVisual:
     def update(self, waypoints):
         """ Updates the waypoint positions to safe computational power. Varying lengths of waypoints should be handled """
         waypoints = self._convert_to_list(waypoints)
-        
+
         # Handle varying lengths: Create or remove spheres and lines as necessary
         # Step 1: Create additional points and lines in the origin
         while len(self.point_ids) < len(waypoints):
@@ -362,6 +454,7 @@ class PathVisual:
         while len(self.line_ids) > len(waypoints) - 1:
             p.removeUserDebugItem(self.line_ids.pop())
         
+        # Step3: Update points and lines
         # Update positions of points
         for i, wp in enumerate(waypoints):
             p.resetBasePositionAndOrientation(self.point_ids[i], wp, [0, 0, 0, 1])
@@ -375,7 +468,7 @@ class PathVisual:
                 lineWidth=self.line_width,
                 replaceItemUniqueId=self.line_ids[i],
             )
-        
+
         self.waypoints = waypoints
 
     def _clear_visuals(self):
@@ -396,10 +489,6 @@ class PathVisual:
             pass
 
 
-
-
-
-
 def main(args=None):
     rclpy.init(args=args)
     drone_simulator = DroneSimulator()
@@ -408,25 +497,27 @@ def main(args=None):
     rclpy.shutdown()
 
 
-
 if __name__ == '__main__':
     main()
 
-# TODO: Make all the parameters from the lowlevel-class "Obstacle" available when calling "Building"
 
 # TODO: ROS params ,
 # TODO: randomization with random seed, 
-# TODO: dynamic, 
-# TODO: publish static obstacles ones, 
-# TODO: dynamic obstacles
+
+# TODO: publish static obstacles once, 
+
 # TODO: publish dynamic obstacles,
 # TODO: publish types of obstacles 
+# TODO: Implement different difficulties
+# TODO: Seperate Marker class to mark start and goal of the path
 # TODO: input validation
     # if not isinstance(value, int):
     #    raise TypeError("Value must be an integer")
     # if value <= 0:
     #    raise ValueError("Value must be greater than zero")
-# TODO: subscribe to waypoint topic and draw waypoints with connecting edges to the screen
+# TODO: Add a launch file
+# TODO: Change static obstacle publisher to a service
+# TODO: Make custom message type to publish obstacles
 
 
 ### ROS MESSAGE shape_msgs/msg/SolidPrimitive Message https://docs.ros2.org/foxy/api/shape_msgs/msg/SolidPrimitive.html
