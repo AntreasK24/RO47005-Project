@@ -1,0 +1,187 @@
+alias run_singularity='conda deactivate; singularity shell --nv $HOME/RO47003/Singularity/ro47003_humble_v7.sif'
+
+
+# RO47005: Enable rosdep to find gym_pybullet_drones_packages
+export PATH="$HOME/.local/bin:$PATH"
+
+
+Build the container: sudo singularity build ros2_humble_acados_drones.sif singularity_RO47005_drone_ws_V01.def  | tee build_output.txt
+Put output in a file: singularity build my_container.sif my_container.def | tee build_output.txt
+
+Run the container: singularity shell --nv path/to/file/ros2_humble_acados_drones.sif 
+After that:
+source /opt/ros/humble/setup.bash
+
+and to you gym_pybullet_drones OR acados, activate their virtual python environment:
+
+source /gym_pybullet_drones/drone_env/bin/activate
+
+OR 
+
+source /acados/acados_env/bin/activate
+
+type 'deactivate' to deactivate any of the virtual environments
+
+If we want to scrape the virtual environments, we can change the buildfile of the container.
+
+
+
+start_acados.sh:
+
+#!/bin/sh
+
+source ~/opt/ros/humble/setup.bash 
+source install/local_setup.bash
+#modify according to files location
+export ACADOS_SOURCE_DIR=$HOME/acados
+export LD_LIBRARY_PATH=$HOME/acados/lib
+
+###############
+
+Installation of gym-pybullet-drones:
+###
+git clone https://github.com/utiasDSL/gym-pybullet-drones.git
+cd gym-pybullet-drones/
+
+conda create -n drones python=3.10
+conda activate drones
+
+pip3 install --upgrade pip
+pip3 install -e . # if needed, `sudo apt install build-essential` to install `gcc` and build `pybullet`
+
+
+###############
+Installation of Acados: (needs cmake)
+
+https://docs.acados.org/installation/?utm_source=chatgpt.com
+###
+git clone https://github.com/acados/acados.git
+cd acados
+git submodule update --recursive --init
+
+mkdir -p build
+cd build
+cmake -DACADOS_WITH_QPOASES=ON ..
+# add more optional arguments e.g. -DACADOS_WITH_OSQP=OFF/ON -DACADOS_INSTALL_DIR=<path_to_acados_installation_folder> above
+make install -j4
+
+####
+
+Check installation:
+
+Run a Python example to check that everything works. We suggest to get started with the example <acados_root>/examples/acados_python/getting_started/minimal_example_ocp.py
+
+
+###############
+Installation of casadi: 
+
+###
+pip install casadi
+
+
+###
+Check installation: 
+from casadi import *
+x = MX.sym("x")
+print(jacobian(sin(x),x))
+
+
+
+
+
+##################
+Build singularity shell according to chatgpt:
+
+sudo singularity build --sandbox my_container Singularity.def
+singularity shell --writable my_container
+
+	within container install casadi and acados: 
+	pip install casadi
+	
+	+ verify: python -c "import casadi; print(casadi.__version__)"
+
+	install acados: 
+	
+
+	
+
+	install python interface for acados:
+	pip install -e $HOME/acados/interfaces/acados_template
+
+	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"<acados_root>/lib"
+	export ACADOS_SOURCE_DIR="<acados_root>"
+
+
+####### Build and test
+
+To convert the provided Singularity definition file into a Singularity container and build it, follow these steps:
+
+---
+
+### **Step 1: Save the Definition File**
+Save the generated definition file as `Singularity.def` in your working directory.
+
+---
+
+### **Step 2: Build the Singularity Container**
+Run the following command in your terminal to build the container from the definition file:
+
+```bash
+sudo singularity build ros2_acados.sif Singularity.def
+```
+
+**Explanation:**
+- `sudo`: Required for full system privileges during container creation.
+- `singularity build`: Command to build the container.
+- `ros2_acados.sif`: The name of the output container file (`.sif` stands for Singularity Image Format).
+- `Singularity.def`: The name of the definition file.
+
+---
+
+### **Step 3: Verify the Container Build**
+After the build completes, you can verify the container and test it:
+
+```bash
+singularity test ros2_acados.sif
+```
+
+This will run the `%test` section of your definition file, confirming that ROS, ACADOS, CasADi, and the `gym-pybullet-drones` library are installed correctly.
+
+---
+
+### **Step 4: Run the Singularity Container**
+You can start the container and access its shell:
+
+```bash
+singularity shell ros2_acados.sif
+```
+
+or run a command inside the container directly:
+
+```bash
+singularity exec ros2_acados.sif python3 -c "import casadi; import acados_template; import gym; print('Container is ready!')"
+```
+
+---
+
+### **Step 5: Run a ROS 2 Node Inside the Container**
+To run a ROS 2 node from within the container:
+
+```bash
+singularity exec ros2_acados.sif ros2 run <package_name> <node_name>
+```
+
+---
+
+### **Optional: Build in a Writable Sandbox Mode (For Development)**
+If you need a writable container for ongoing development:
+
+```bash
+sudo singularity build --sandbox ros2_acados_sandbox Singularity.def
+singularity shell --writable ros2_acados_sandbox
+```
+
+---
+
+Let me know if you need help running a specific ROS 2 node or testing a simulation! 🚀
+

@@ -1,0 +1,91 @@
+BootStrap: docker
+
+# This sha corresponds to ros:humble-ros-base-jammy from august 17 2024
+FROM: ros@sha256:80a4f6329aad64f14b600133cb3fd279d0bf666feeca5abef3f10bb41b0916ea
+
+%setup
+    mkdir ${SINGULARITY_ROOTFS}/tmp_ros_ws
+    mkdir ${SINGULARITY_ROOTFS}/tmp_deb_pkg
+
+%post
+
+    # use TUD mirror for Ubuntu
+    sed -i 's|archive.ubuntu.com/ubuntu/|ftp.tudelft.nl/archive.ubuntu.com/|g' /etc/apt/sources.list
+
+    # mostly packages for Linux and C++ lab
+    apt-get clean && apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        bash-completion \
+        curl \
+        ffmpeg \
+        gdb \
+        git \
+        gitk \
+        htop \
+        libcanberra-gtk-module \
+        less \
+        locales \
+        lsb-release \
+        make \
+        man \
+        mercurial \
+        nano \
+        python3-pip \
+        ssh \
+        sudo \
+        terminator \
+        vim \
+        wget \
+        xterm 
+
+    rm -rf /var/lib/apt/lists/*
+
+    # ROS: remove the main repository (using snapshot, see below)
+    rm /etc/apt/sources.list.d/ros2-latest.list
+
+    # ROS: add the Humble snapshot repository
+    # NOTE: we won't be updating ROSDISTRO_INDEX_URL nor adjust any of the other
+    # rosdep related bits. Rationale: this Singularity image is only meant to be
+    # used for the RO47003 course practicums, and is read-only. There should be
+    # no need for rosdep, as it contains all dependencies for the packages
+    # students will be working with.
+    echo "deb http://snapshots.ros.org/humble/2024-07-03/ubuntu jammy main" > /etc/apt/sources.list.d/ros-snapshots.list
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 4B63CF8FDE49746E98FA01DDAD19BAB3CBF125EA
+
+    # update just the ROS Humble packages to the latest version in the snapshot repository
+    apt-get update
+    apt-get install -y --only-upgrade ros-${ROS_DISTRO}*    
+
+    # We copied the full solution up to here.
+    # Now we can use rosdep install to make sure all the dependecies are 
+    # installed on the image.
+    rosdep update --rosdistro=${ROS_DISTRO}
+    rosdep install -y -i --from-paths /tmp_ros_ws/src --rosdistro=${ROS_DISTRO}
+
+
+    # we don't want the code in the image, so remove it
+    rm -r /tmp_ros_ws
+    rm -r /tmp_deb_pkg
+
+    # don't leave unneeded stuff around
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+    # Show the curent dir when working in the singularity image
+    # This has changed in singularity 3.x and now needs to be done in the environment
+    # See https://github.com/hpcng/singularity/issues/3590
+
+    cat > /.singularity.d/env/99-zz-robprac.sh <<EOF  
+PS1="Singularity:\\W> "
+export PS1
+EOF
+
+%environment
+    # helps with debugging / diagnostics
+    export RO47003_SIMAGE_ROS_SNAPSHOT=2024-07-03
+    export RO47003_SIMAGE_ROS_DISTRO=${ROS_DISTRO}
+    export RO47003_SIMAGE_VERSION=7
+    export RO47003_DIMAGE_SHA265='80a4f6329aad64f14b600133cb3fd279d0bf666feeca5abef3f10bb41b0916ea'
+    # this is needed to make sure no only ROS nodes/topics runnning on the host are found
+    export ROS_LOCALHOST_ONLY=1
+
