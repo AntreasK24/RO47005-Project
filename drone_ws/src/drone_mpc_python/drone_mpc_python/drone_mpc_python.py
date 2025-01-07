@@ -13,8 +13,8 @@ class DroneMPCNode(Node):
         self.drone_solver = DroneMPCSolver()
 
         #Set initial state and default target position (this  could be a ROS param)
-        self.initial_state = np.array([0.0,0.0,0.1125,0.0,0.0,0.0])
-        self.target_pos = np.array([1.0,1.0,1.0])
+        self.initial_state = np.array([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]) # on the ground at origin
+        self.target_pos = np.array([0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]) # hovering at (x,x,z) = (0,0,1)
 
         #Setup solver
         self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos)
