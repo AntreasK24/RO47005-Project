@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: global-planner
+Version: 0.0.0
+Summary: A python package to create a global path for the drone to follow with the MPC
+Home-page: UNKNOWN
+Maintainer: mukilsaravanan
+Maintainer-email: m.saravanan@student.tudelft.nl
+License: Apache-2.0
+Platform: UNKNOWN
+License-File: LICENSE
+
+UNKNOWN
+

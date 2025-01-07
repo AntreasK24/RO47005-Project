@@ -7,9 +7,18 @@ def export_drone_ode_model(is_state_noise=False, is_input_noise=False) -> Acados
     model_name = 'drone_ode'
     
     # Constants (for the drone model)
-    # Mass of the drone [kg]
-    m = 0.027 #got this from urdf file 
+    # Mass of the drone (kg)
+    m = 0.027 
+    
+    # States: position and velocity in x, y, z
+    x1 = SX.sym('x1')  # position in x
+    x2 = SX.sym('x2')  # position in y
+    x3 = SX.sym('x3')  # position in z
+    v1 = SX.sym('v1')  # velocity in x
+    v2 = SX.sym('v2')  # velocity in y
+    v3 = SX.sym('v3')  # velocity in z
 
+<<<<<<< HEAD
     #Gravity [m/s^2]
     g = 0
 
@@ -100,12 +109,47 @@ def export_drone_ode_model(is_state_noise=False, is_input_noise=False) -> Acados
         q*cos(phi) - r*sin(phi),  # theta dot
         (q*sin(phi) + r*cos(phi)) / cos(theta)  # psi dot
     )
-
+=======
+    x = vertcat(x1, x2, x3, v1, v2, v3)
     
-    omega_dot = vertcat(p_dot,q_dot,r_dot)
-    f_expl = vertcat(f_trans,v_dot,f_rot,omega_dot)
-    f_impl = xdot - f_expl
+    # Control inputs: acceleration in x, y, z
+    ax = SX.sym('ax')
+    ay = SX.sym('ay')
+    az = SX.sym('az')
+    
+    u = vertcat(ax, ay, az)
 
+    # Derivatives of states (xdot)
+    x1_dot = SX.sym('x1_dot')
+    x2_dot = SX.sym('x2_dot')
+    x3_dot = SX.sym('x3_dot')
+    v1_dot = SX.sym('v1_dot')
+    v2_dot = SX.sym('v2_dot')
+    v3_dot = SX.sym('v3_dot')
+>>>>>>> 31234f3 (Added obstacle avoidance)
+
+    xdot = vertcat(x1_dot, x2_dot, x3_dot, v1_dot, v2_dot, v3_dot)
+
+    # Define system matrices A and B 
+    A = np.array([
+        [0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0]
+    ])
+    
+    B = np.array([
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ])
+
+<<<<<<< HEAD
     # With Additive gaussian noise in measurements and actuators
     if is_state_noise == True:
         state_dims = len(x_dot)
@@ -114,6 +158,12 @@ def export_drone_ode_model(is_state_noise=False, is_input_noise=False) -> Acados
     if is_input_noise == True:
         input_dims = len(inputs)
         inputs = inputs + mu_inputs*np.random.multivariate_normal(mean=np.zeros(input_dims), cov=np.eye(input_dims), size=input_dims).T #  inputs = inputs + input_noise_weight*(standard multi-variate normal distribution) i.e., zero mean and unit standart deviation
+=======
+    # Define the state-space model as: x_dot = A * x + B * u
+    f_expl = A @ x + B @ u
+
+    f_impl = xdot - f_expl  # Implicit dynamics (state derivative equals the dynamics)
+>>>>>>> 31234f3 (Added obstacle avoidance)
 
     # Define the model
     model = AcadosModel()
@@ -126,14 +176,8 @@ def export_drone_ode_model(is_state_noise=False, is_input_noise=False) -> Acados
     model.name = model_name
 
     # Store labels for the state, control input, and time
-    model.x_labels = ['$x$ [m]', '$y$ [m]', '$z$ [m]', '$v_x$ [m/s]', '$v_y$ [m/s]', '$v_z$ [m/s]',
-                    '$\\psi$ [rad]', '$\\theta$ [rad]', '$\\phi$ [rad]', '$p$ [rad/s]', '$q$ [rad/s]', '$r$ [rad/s]']
-    model.u_labels = ['$a_x$ [m/s²]', '$a_y$ [m/s²]', '$a_z$ [m/s²]', '$p_{dot}$ [rad/s²]', '$q_{dot}$ [rad/s²]', '$r_{dot}$ [rad/s²]']
+    model.x_labels = ['$x$ [m]', '$y$ [m]', '$z$ [m]', '$v_x$ [m/s]', '$v_y$ [m/s]', '$v_z$ [m/s]']
+    model.u_labels = ['$a_x$ [m/s²]', '$a_y$ [m/s²]', '$a_z$ [m/s²]']
     model.t_label = '$t$ [s]'
 
     return model
-
-
-
-
-

@@ -1,0 +1,21 @@
+[4.234s] Invoking command in '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/scenario_creator': PYTHONPATH=/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/scenario_creator/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/scenario_creator/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../build/scenario_creator build --build-base /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/scenario_creator/build install --record /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/scenario_creator/install.log --single-version-externally-managed install_data
+[5.449s] running egg_info
+[5.452s] writing ../../../build/scenario_creator/scenario_creator.egg-info/PKG-INFO
+[5.452s] writing dependency_links to ../../../build/scenario_creator/scenario_creator.egg-info/dependency_links.txt
+[5.453s] writing entry points to ../../../build/scenario_creator/scenario_creator.egg-info/entry_points.txt
+[5.453s] writing requirements to ../../../build/scenario_creator/scenario_creator.egg-info/requires.txt
+[5.454s] writing top-level names to ../../../build/scenario_creator/scenario_creator.egg-info/top_level.txt
+[5.462s] reading manifest file '../../../build/scenario_creator/scenario_creator.egg-info/SOURCES.txt'
+[5.463s] adding license file 'LICENSE'
+[5.467s] writing manifest file '../../../build/scenario_creator/scenario_creator.egg-info/SOURCES.txt'
+[5.467s] running build
+[5.467s] running build_py
+[5.468s] running install
+[5.469s] running install_lib
+[5.473s] running install_data
+[5.474s] running install_egg_info
+[5.481s] removing '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/scenario_creator/lib/python3.10/site-packages/scenario_creator-0.0.0-py3.10.egg-info' (and everything under it)
+[5.482s] Copying ../../../build/scenario_creator/scenario_creator.egg-info to /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/scenario_creator/lib/python3.10/site-packages/scenario_creator-0.0.0-py3.10.egg-info
+[5.484s] running install_scripts
+[5.550s] writing list of installed files to '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/scenario_creator/install.log'
+[5.616s] Invoked command in '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/scenario_creator' returned '0': PYTHONPATH=/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/scenario_creator/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/scenario_creator/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../build/scenario_creator build --build-base /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/scenario_creator/build install --record /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/scenario_creator/install.log --single-version-externally-managed install_data

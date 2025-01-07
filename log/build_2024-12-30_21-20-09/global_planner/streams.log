@@ -1,0 +1,21 @@
+[1.627s] Invoking command in '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/global_planner': PYTHONPATH=/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/global_planner/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/global_planner/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../build/global_planner build --build-base /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/global_planner/build install --record /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/global_planner/install.log --single-version-externally-managed install_data
+[2.011s] running egg_info
+[2.012s] writing ../../../build/global_planner/global_planner.egg-info/PKG-INFO
+[2.013s] writing dependency_links to ../../../build/global_planner/global_planner.egg-info/dependency_links.txt
+[2.013s] writing entry points to ../../../build/global_planner/global_planner.egg-info/entry_points.txt
+[2.013s] writing requirements to ../../../build/global_planner/global_planner.egg-info/requires.txt
+[2.013s] writing top-level names to ../../../build/global_planner/global_planner.egg-info/top_level.txt
+[2.016s] reading manifest file '../../../build/global_planner/global_planner.egg-info/SOURCES.txt'
+[2.016s] adding license file 'LICENSE'
+[2.017s] writing manifest file '../../../build/global_planner/global_planner.egg-info/SOURCES.txt'
+[2.018s] running build
+[2.018s] running build_py
+[2.018s] running install
+[2.018s] running install_lib
+[2.020s] running install_data
+[2.021s] running install_egg_info
+[2.024s] removing '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/global_planner/lib/python3.10/site-packages/global_planner-0.0.0-py3.10.egg-info' (and everything under it)
+[2.024s] Copying ../../../build/global_planner/global_planner.egg-info to /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/global_planner/lib/python3.10/site-packages/global_planner-0.0.0-py3.10.egg-info
+[2.025s] running install_scripts
+[2.067s] writing list of installed files to '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/global_planner/install.log'
+[2.107s] Invoked command in '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/global_planner' returned '0': PYTHONPATH=/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/global_planner/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/global_planner/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../build/global_planner build --build-base /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/global_planner/build install --record /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/global_planner/install.log --single-version-externally-managed install_data

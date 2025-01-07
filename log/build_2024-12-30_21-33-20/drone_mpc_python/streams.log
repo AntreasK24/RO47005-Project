@@ -1,0 +1,25 @@
+[4.227s] Invoking command in '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/drone_mpc_python': PYTHONPATH=/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../build/drone_mpc_python build --build-base /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/build install --record /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/install.log --single-version-externally-managed install_data
+[5.403s] running egg_info
+[5.407s] writing ../../../build/drone_mpc_python/drone_mpc_python.egg-info/PKG-INFO
+[5.408s] writing dependency_links to ../../../build/drone_mpc_python/drone_mpc_python.egg-info/dependency_links.txt
+[5.408s] writing entry points to ../../../build/drone_mpc_python/drone_mpc_python.egg-info/entry_points.txt
+[5.408s] writing requirements to ../../../build/drone_mpc_python/drone_mpc_python.egg-info/requires.txt
+[5.409s] writing top-level names to ../../../build/drone_mpc_python/drone_mpc_python.egg-info/top_level.txt
+[5.417s] reading manifest file '../../../build/drone_mpc_python/drone_mpc_python.egg-info/SOURCES.txt'
+[5.417s] adding license file 'LICENSE'
+[5.422s] writing manifest file '../../../build/drone_mpc_python/drone_mpc_python.egg-info/SOURCES.txt'
+[5.422s] running build
+[5.422s] running build_py
+[5.423s] copying drone_mpc_python/drone_mpc_python.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/build/lib/drone_mpc_python
+[5.424s] running install
+[5.425s] running install_lib
+[5.428s] copying /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/build/lib/drone_mpc_python/drone_mpc_python.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages/drone_mpc_python
+[5.431s] byte-compiling /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages/drone_mpc_python/drone_mpc_python.py to drone_mpc_python.cpython-310.pyc
+[5.435s] running install_data
+[5.435s] running install_egg_info
+[5.442s] removing '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages/drone_mpc_python-0.0.0-py3.10.egg-info' (and everything under it)
+[5.443s] Copying ../../../build/drone_mpc_python/drone_mpc_python.egg-info to /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages/drone_mpc_python-0.0.0-py3.10.egg-info
+[5.446s] running install_scripts
+[5.534s] Installing drone_mpc_python script to /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/drone_mpc_python
+[5.536s] writing list of installed files to '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/install.log'
+[5.614s] Invoked command in '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/drone_mpc_python' returned '0': PYTHONPATH=/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../build/drone_mpc_python build --build-base /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/build install --record /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/install.log --single-version-externally-managed install_data

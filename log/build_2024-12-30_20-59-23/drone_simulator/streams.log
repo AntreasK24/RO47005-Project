@@ -1,0 +1,42 @@
+[1.800s] Invoking command in '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/drone_simulator': PYTHONPATH=/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../build/drone_simulator build --build-base /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/build install --record /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/install.log --single-version-externally-managed install_data
+[2.204s] running egg_info
+[2.206s] creating ../../../build/drone_simulator/drone_simulator.egg-info
+[2.206s] writing ../../../build/drone_simulator/drone_simulator.egg-info/PKG-INFO
+[2.206s] writing dependency_links to ../../../build/drone_simulator/drone_simulator.egg-info/dependency_links.txt
+[2.207s] writing entry points to ../../../build/drone_simulator/drone_simulator.egg-info/entry_points.txt
+[2.207s] writing requirements to ../../../build/drone_simulator/drone_simulator.egg-info/requires.txt
+[2.207s] writing top-level names to ../../../build/drone_simulator/drone_simulator.egg-info/top_level.txt
+[2.207s] writing manifest file '../../../build/drone_simulator/drone_simulator.egg-info/SOURCES.txt'
+[2.210s] reading manifest file '../../../build/drone_simulator/drone_simulator.egg-info/SOURCES.txt'
+[2.211s] adding license file 'LICENSE'
+[2.212s] writing manifest file '../../../build/drone_simulator/drone_simulator.egg-info/SOURCES.txt'
+[2.212s] running build
+[2.212s] running build_py
+[2.213s] creating /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/build
+[2.213s] creating /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/build/lib
+[2.213s] creating /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/build/lib/drone_simulator
+[2.213s] copying drone_simulator/drone_simulator.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/build/lib/drone_simulator
+[2.213s] copying drone_simulator/__init__.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/build/lib/drone_simulator
+[2.213s] copying drone_simulator/drone_simulator_rpm.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/build/lib/drone_simulator
+[2.213s] running install
+[2.213s] running install_lib
+[2.214s] creating /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/python3.10/site-packages/drone_simulator
+[2.214s] copying /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/build/lib/drone_simulator/drone_simulator.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/python3.10/site-packages/drone_simulator
+[2.215s] copying /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/build/lib/drone_simulator/__init__.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/python3.10/site-packages/drone_simulator
+[2.215s] copying /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/build/lib/drone_simulator/drone_simulator_rpm.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/python3.10/site-packages/drone_simulator
+[2.215s] byte-compiling /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/python3.10/site-packages/drone_simulator/drone_simulator.py to drone_simulator.cpython-310.pyc
+[2.217s] byte-compiling /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/python3.10/site-packages/drone_simulator/__init__.py to __init__.cpython-310.pyc
+[2.217s] byte-compiling /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/python3.10/site-packages/drone_simulator/drone_simulator_rpm.py to drone_simulator_rpm.cpython-310.pyc
+[2.218s] running install_data
+[2.218s] creating /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/share/ament_index
+[2.218s] creating /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/share/ament_index/resource_index
+[2.219s] creating /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/share/ament_index/resource_index/packages
+[2.219s] copying resource/drone_simulator -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/share/ament_index/resource_index/packages
+[2.219s] copying package.xml -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/share/drone_simulator
+[2.219s] running install_egg_info
+[2.221s] Copying ../../../build/drone_simulator/drone_simulator.egg-info to /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/python3.10/site-packages/drone_simulator-0.0.0-py3.10.egg-info
+[2.222s] running install_scripts
+[2.269s] Installing drone_simulator script to /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/drone_simulator
+[2.270s] Installing drone_simulator_rpm script to /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/drone_simulator
+[2.274s] writing list of installed files to '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/install.log'
+[2.316s] Invoked command in '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/drone_simulator' returned '0': PYTHONPATH=/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_simulator/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../build/drone_simulator build --build-base /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/build install --record /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_simulator/install.log --single-version-externally-managed install_data

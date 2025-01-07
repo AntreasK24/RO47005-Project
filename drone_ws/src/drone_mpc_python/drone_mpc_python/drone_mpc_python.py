@@ -15,11 +15,11 @@ class DroneMPCNode(Node):
         self.drone_solver = DroneMPCSolver()
 
         #Set initial state and default target position (this  could be a ROS param)
-        self.initial_state = np.array([0.0,0.0,0.1125,0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0])
-        self.target_pos = np.array([3.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])  
+        self.initial_state = np.array([0.0,0.0,0.1125,0.0,0.0,0.0])
+        self.target_pos = np.array([3.0, 2.0, 1.0, 0.0, 0.0, 0.0])  
 
         #Setup solver
-        self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos)
+        self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=None,d_min=0.5)
 
         #Publisher
         self.velocity_pub = self.create_publisher(Twist, '/cmd_vel', 10)
@@ -36,12 +36,7 @@ class DroneMPCNode(Node):
     def current_pose_callback(self,msg):
         self.initial_state[:3] = np.array([msg.position.x, msg.position.y, msg.position.z])
 
-        quaternion = [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
-        roll, pitch, yaw = transforms3d.euler.quat2euler(quaternion)
-        self.initial_state[6] = roll
-        self.initial_state[7] = pitch
-        self.initial_state[8] = yaw
-
+        
 
     def target_position_callback(self,msg):
         
@@ -57,13 +52,13 @@ class DroneMPCNode(Node):
             self.get_logger().info("Setting up new solver...")
             del self.drone_solver
             self.drone_solver = DroneMPCSolver()
-            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos)
+            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=None,d_min=0.5)
 
     #🍞
     def timer_callback(self):
 
         #Solve optimization problem and get first control input
-        control_input = self.drone_solver.solve(self.initial_state, self.target_pos)
+        control_input = self.drone_solver.solve(self.initial_state)
         self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}")
         
         #Publish the velocity
@@ -71,11 +66,6 @@ class DroneMPCNode(Node):
         velocity_msg.linear.x += control_input[0] * self.dt
         velocity_msg.linear.y += control_input[1] * self.dt
         velocity_msg.linear.z += control_input[2] * self.dt
-
-        velocity_msg.angular.x += control_input[3] * self.dt
-        velocity_msg.angular.y += control_input[4] * self.dt
-        velocity_msg.angular.z += control_input[5] * self.dt 
-
 
         self.velocity_pub.publish(velocity_msg)
 

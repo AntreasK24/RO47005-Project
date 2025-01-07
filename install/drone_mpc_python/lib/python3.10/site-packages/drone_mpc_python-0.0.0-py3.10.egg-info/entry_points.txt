@@ -1,0 +1,3 @@
+[console_scripts]
+drone_mpc_python = drone_mpc_python.drone_mpc_python:main
+

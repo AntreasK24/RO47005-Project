@@ -1,0 +1,28 @@
+[1.589s] Invoking command in '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/drone_mpc_python': PYTHONPATH=/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../build/drone_mpc_python build --build-base /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/build install --record /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/install.log --single-version-externally-managed install_data
+[1.969s] running egg_info
+[1.970s] writing ../../../build/drone_mpc_python/drone_mpc_python.egg-info/PKG-INFO
+[1.970s] writing dependency_links to ../../../build/drone_mpc_python/drone_mpc_python.egg-info/dependency_links.txt
+[1.971s] writing entry points to ../../../build/drone_mpc_python/drone_mpc_python.egg-info/entry_points.txt
+[1.971s] writing requirements to ../../../build/drone_mpc_python/drone_mpc_python.egg-info/requires.txt
+[1.971s] writing top-level names to ../../../build/drone_mpc_python/drone_mpc_python.egg-info/top_level.txt
+[1.974s] reading manifest file '../../../build/drone_mpc_python/drone_mpc_python.egg-info/SOURCES.txt'
+[1.974s] adding license file 'LICENSE'
+[1.975s] writing manifest file '../../../build/drone_mpc_python/drone_mpc_python.egg-info/SOURCES.txt'
+[1.975s] running build
+[1.976s] running build_py
+[1.976s] copying drone_mpc_python/drone_mpc_python.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/build/lib/drone_mpc_python
+[1.976s] copying drone_mpc_python/mpcDroneSolver.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/build/lib/drone_mpc_python
+[1.977s] running install
+[1.977s] running install_lib
+[1.977s] copying /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/build/lib/drone_mpc_python/drone_mpc_python.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages/drone_mpc_python
+[1.978s] copying /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/build/lib/drone_mpc_python/mpcDroneSolver.py -> /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages/drone_mpc_python
+[1.978s] byte-compiling /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages/drone_mpc_python/drone_mpc_python.py to drone_mpc_python.cpython-310.pyc
+[1.980s] byte-compiling /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages/drone_mpc_python/mpcDroneSolver.py to mpcDroneSolver.cpython-310.pyc
+[1.981s] running install_data
+[1.981s] running install_egg_info
+[1.984s] removing '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages/drone_mpc_python-0.0.0-py3.10.egg-info' (and everything under it)
+[1.984s] Copying ../../../build/drone_mpc_python/drone_mpc_python.egg-info to /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages/drone_mpc_python-0.0.0-py3.10.egg-info
+[1.985s] running install_scripts
+[2.015s] Installing drone_mpc_python script to /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/drone_mpc_python
+[2.016s] writing list of installed files to '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/install.log'
+[2.049s] Invoked command in '/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/drone_ws/src/drone_mpc_python' returned '0': PYTHONPATH=/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/install/drone_mpc_python/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../../build/drone_mpc_python build --build-base /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/build install --record /home/antreas/MsC/Q2/RO47005/finalAssignment/RO47005-Project/build/drone_mpc_python/install.log --single-version-externally-managed install_data
