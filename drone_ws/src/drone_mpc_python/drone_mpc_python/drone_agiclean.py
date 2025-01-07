@@ -3,8 +3,41 @@ from acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
 import scipy.linalg
 import numpy as np
 
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
 # Gravitational acceleration
 g_const = 9.8124  # m/s^2
+
+
+mass_value = 0.752  # kg
+hover_prop = mass_value * g_const / 4.0
+
+x0 = np.array([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+yref = np.array(
+        [
+            1,
+            2,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            hover_prop,
+            hover_prop,
+            hover_prop,
+            hover_prop,
+        ]
+    )
+
+
+yref_e = yref[0:12]
 
 
 def quat_mult(q1, q2):
@@ -250,30 +283,11 @@ def acados_settings(N, Tf):
     hover_prop = mass_value * g_const / 4.0
 
     # initial references
-    ocp.cost.yref = np.array(
-        [
-            0,
-            0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            hover_prop,
-            hover_prop,
-            hover_prop,
-            hover_prop,
-        ]
-    )
-    ocp.cost.yref_e = np.array([0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    ocp.cost.yref = yref
+    ocp.cost.yref_e = yref_e
 
     # initial state
-    ocp.constraints.x0 = np.array([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    ocp.constraints.x0 = x0
     ocp.solver_options.tf = Tf
     ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"  # "PARTIAL_CONDENSING_HPIPM", "FULL_CONDENSING_HPIPM"
     ocp.solver_options.nlp_solver_type = "SQP_RTI"  # "SQP", "SQP_RTI"
@@ -295,6 +309,13 @@ Nsim = int(T * N / Tf)
 
 acados_solver, model_drone = acados_settings(N, Tf)
 
+# Initialize lists to store position and velocity
+positions = []
+velocities = []
+
+# Initialize lists to store position (only in 2D for XY plane)
+positions_2d = []
+
 for i in range(Nsim):
     status = acados_solver.solve()
     if status != 0:
@@ -306,8 +327,79 @@ for i in range(Nsim):
     x_sol = acados_solver.get(0, "x")
     u_sol = acados_solver.get(0, "u")
 
+    # Extract position (first 3 elements of x)
+    position = x_sol[:3]  # p
+    velocity = x_sol[6:9]  # v
+
+    positions.append(position)
+    velocities.append(velocity)
+
     x1 = acados_solver.get(1, "x")
     acados_solver.set(0, "lbx", x1)
     acados_solver.set(0, "ubx", x1)
     print(x1)
     print(u_sol)
+
+# Convert lists to arrays for plotting
+positions = np.array(positions)
+velocities = np.array(velocities)
+
+# Time vector for plotting
+time = np.linspace(0, T, Nsim)
+print(time)
+
+
+# Create a 3D plot
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+# Set axis labels
+ax.set_xlabel("X position [m]")
+ax.set_ylabel("Y position [m]")
+ax.set_zlabel("Z position [m]")
+ax.set_title("Drone Position Animation")
+
+# Plot initial and goal positions
+ax.scatter(yref[0], yref[1], yref[2], color='g', s=100, label="Initial Position")
+ax.scatter(x0[0], x0[1], x0[2], color='r', s=100, label="Goal Position")
+
+# Initialize a scatter plot for the drone's position
+drone_plot, = ax.plot([], [], [], 'bo', markersize=6)
+
+# Define the update function for the animation
+def update(frame):
+    drone_plot.set_data(positions[:frame, 0], positions[:frame, 1])  # X and Y data
+    drone_plot.set_3d_properties(positions[:frame, 2])  # Z data
+    return drone_plot,
+
+# Create the animation
+ani = FuncAnimation(fig, update, frames=len(positions), interval=50, blit=True)
+
+# Display the animation
+plt.show()
+
+
+# Plot position
+plt.figure(figsize=(12, 6))
+
+plt.subplot(2, 1, 1)
+plt.plot(time, positions[:, 0], label="x position")
+plt.plot(time, positions[:, 1], label="y position")
+plt.plot(time, positions[:, 2], label="z position")
+plt.xlabel("Time [s]")
+plt.ylabel("Position [m]")
+plt.title("Drone Position vs Time")
+plt.legend()
+
+# Plot velocity
+plt.subplot(2, 1, 2)
+plt.plot(time, velocities[:, 0], label="x velocity")
+plt.plot(time, velocities[:, 1], label="y velocity")
+plt.plot(time, velocities[:, 2], label="z velocity")
+plt.xlabel("Time [s]")
+plt.ylabel("Velocity [m/s]")
+plt.title("Drone Velocity vs Time")
+plt.legend()
+
+plt.tight_layout()
+plt.show()
