@@ -10,6 +10,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', ['launch/scenario_launch.py']),
     ],
     install_requires=['setuptools','drone_msgs'],
     zip_safe=True,
@@ -22,5 +23,8 @@ setup(
         'console_scripts': [
             'drone_setup = scenario_creator.drone_scenario:main',
         ],
+    'launch.frontend.launch_description_sources': [
+        'scenario_launch = scenario_creator.launch.scenario_launch:generate_launch_description',
+    ],
     },
 )

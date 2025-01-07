@@ -1,3 +1,22 @@
+from casadi import MX, vertcat
+
+# Define symbolic variables
+x1 = MX.sym('x1')
+x2 = MX.sym('x2')
+
+# Stack variables into a vector
+x = vertcat(x1, x2)
+u = MX.sym('u')
+
+# Define the system of equations (ODE)
+ode = vertcat((1 - x2**2)*x1 - x2 + u, x1)
+
+# Print the size of the ODE vector
+print("Size of ode:", ode.size1(), ode.size2())
+
+
+
+'''
 import pybullet as p
 import pybullet_data
 
@@ -20,7 +39,7 @@ for body_id in obstacles:
     body_name = p.getBodyInfo(body_id)[1].decode('utf-8')
     print(f"Body ID: {body_id}, Name: {body_name}")
 
-
+'''
 
 '''
 import numpy as np
