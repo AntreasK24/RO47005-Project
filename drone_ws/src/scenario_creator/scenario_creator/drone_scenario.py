@@ -1,4 +1,4 @@
-
+#sys.path.append("/gym-pybullet-drones")
 import pybullet as p
 import pybullet_data
 import time
@@ -10,7 +10,7 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist,Pose,PoseArray
 from std_msgs.msg import String
-import drone_msgs.msg # import Obstacle, ObstacleArray
+import drone_msgs.msg # import Obstacle, ObstacleArray, SphereArray
 from gym_pybullet_drones.envs import VelocityAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics
 
@@ -24,6 +24,7 @@ class DroneSimulator(Node):
         #Subscriber
         self.velocity_subscriber = self.create_subscription(Twist,'/cmd_vel',self.velocity_callback,10)
         self.waypoint_subscriber = self.create_subscription(PoseArray,'/waypoints',self.waypoint_callback,1)
+        self.sphere_subscriber = self.create_subscription(drone_msgs.msg.SphereArray,'/spheres',self.sphere_callback,1)
         
         #Publisher
         self.pose_publisher = self.create_publisher(Pose, '/pose', 10)
@@ -47,8 +48,10 @@ class DroneSimulator(Node):
         self.current_angular_velocity = np.array([[0.0, 0.0, 0.0]])
         self.current_velocity = np.hstack((self.current_linear_velocity,self.current_angular_velocity))
 
-        self.drone_position = None
-        self.path = None
+        self.drone_position = None 
+        self.path = None #PathVisual Type
+        self.spheres = None #SphereArray Type
+        self.sphere_marker = None #Marker Type
 
         self.time = 0.0
 
@@ -111,6 +114,14 @@ class DroneSimulator(Node):
             self.path.update(self.waypoints)
         else:
             self.path = PathVisual(self.waypoints)
+
+    def sphere_callback(self,msg):
+        self.spheres = msg.spheres # SphereArray
+
+        if self.sphere_marker is not None:
+            self.sphere_marker.update(sphere_array=self.spheres) #input: SphereArray
+        else:
+            self.sphere_marker = Marker(sphere_array=self.spheres) #input: SphereArray
         
     def timer_static_obstacles(self):
 
@@ -363,6 +374,211 @@ class Building():
 
         return self.objects
 
+class Marker:
+    def __init__(self, sphere_array= None, positions=None, radius=None, color=[1,0,0,0.3]):
+
+        self.spheres = sphere_array # SphereArray
+        self.positions = positions # list of lists [[x,y,z],...,[x,y,z]]
+        self.radius = radius # float or int OR list of radii
+        self.color = color # list [x,y,z,a]
+        self._variable_radius = False
+        self.point_ids = []  # Store visual body IDs for points
+
+        # Convert positions to type list
+        if self.positions is not None:
+            # Convert positions to list if given in numpy
+            self.positions = self._convert_to_list(self.positions)
+
+
+        # Convert radii to type list
+        if self.radius is not None:
+            if not isinstance(self.radius,(int,float)):
+                self._variable_radius = True
+                assert (len(positions) == len(radius)) or isinstance(radius,(int,float) )
+                self.radius = self._convert_to_list(self.radius)
+            else:
+                self._variable_radius = False
+
+        self._create_visuals()  # Create the initial visuals
+
+    def _convertSphereArray(self,sphere_array):
+        if self.spheres is not None:
+            self._variable_radius = True
+            positions = []
+            radii = []           
+            for sphere in self.spheres:
+                positions.append([sphere.position.x,sphere.position.y,sphere.position.z])
+                radii.append(sphere.radius)
+            self.positions = positions
+            self.radius = radii
+
+    def _convert_to_list(self, positions):
+        """ Converts waypoints to a Python list if they are provided as an array """
+        if isinstance(positions, np.ndarray):
+            return positions.tolist()
+        return positions
+
+    def _create_visuals(self):
+        """Creates points based on the positions."""
+        if self.spheres is not None:
+            self._convertSphereArray(self.spheres)
+            self._variable_radius = True        
+        
+        self._clear_visuals()
+        
+        if self._variable_radius:
+        # Create points as small spheres
+            for i in range(len(self.positions)):
+                visual_shape_id = p.createVisualShape(
+                    shapeType=p.GEOM_SPHERE,
+                    radius=self.radius[i],
+                    rgbaColor=self.color,
+                )
+                point_id = p.createMultiBody(
+                    baseMass=0,  # No dynamics
+                    baseVisualShapeIndex=visual_shape_id,
+                    basePosition=self.positions[i],
+                )
+                self.point_ids.append(point_id)
+        else:
+            for point in self.positions:
+                visual_shape_id = p.createVisualShape(
+                    shapeType=p.GEOM_SPHERE,
+                    radius=self.radius,
+                    rgbaColor=self.color,
+                )
+                point_id = p.createMultiBody(
+                    baseMass=0,  # No dynamics
+                    baseVisualShapeIndex=visual_shape_id,
+                    basePosition=point,
+                )
+                self.point_ids.append(point_id)
+
+    def update(self, sphere_array, positions=None, radius=None):
+        """ Updates the waypoint positions to safe computational power. Varying lengths of waypoints should be handled """
+
+        self._convertSphereArray(sphere_array)
+        self.spheres = sphere_array
+        self._variable_radius = True
+
+        if (positions is not None) and (self.radius is not None):
+            positions = self._convert_to_list(positions)
+            self.positions = positions
+            if not isinstance(self.radius,(int,float)):
+                self._variable_radius = True
+                assert (len(positions) == len(radius)) or isinstance(radius,(int,float) )
+                # Check if we have the same number of positions as of radii
+                self.radius = self._convert_to_list(self.radius)
+            else:
+                self._variable_radius = False
+                self.radius = radius
+        
+
+
+
+        ##### RADII CANNOT BE DYNAMICALLY ADJUSTED, THE OBJECT HAS TO BE REMOVED
+
+        # Handle varying lengths: Create or remove spheres as necessary
+        # Step 1: Create additional points in the origin
+        
+        if not self._variable_radius:
+
+            while len(self.point_ids) < len(self.positions):
+                visual_shape_id = p.createVisualShape(
+                    shapeType=p.GEOM_SPHERE,
+                    radius=self.radius,
+                    rgbaColor=self.color,
+                )
+                point_id = p.createMultiBody(
+                    baseMass=0,  # No dynamics
+                    baseVisualShapeIndex=visual_shape_id,
+                    basePosition=[0, 0, 0],  # Initial position (will be updated)
+                )
+                self.point_ids.append(point_id)
+
+            # Step 2: Remove the last points if we have too many
+            while len(self.point_ids) > len(self.positions):
+                p.removeBody(self.point_ids.pop())
+            
+            # Step3: Update points
+            # Update positions of points
+            for i, pos in enumerate(self.positions):
+                p.resetBasePositionAndOrientation(self.point_ids[i], pos, [0, 0, 0, 1])
+            
+        
+        else:
+            assert len(self.positions) == len(self.radius)
+            if len(self.positions) == len(self.radius):
+                while len(self.point_ids) < len(self.positions):
+                    visual_shape_id = p.createVisualShape(
+                        shapeType=p.GEOM_SPHERE,
+                        radius=self.radius[0], # take the first radius
+                        rgbaColor=self.color,
+                    )
+                    point_id = p.createMultiBody(
+                        baseMass=0,  # No dynamics
+                        baseVisualShapeIndex=visual_shape_id,
+                        basePosition=[0, 0, 0],  # Initial position (will be updated)
+                    )
+                    self.point_ids.append(point_id)
+
+                # Step 2: Remove the last points if we have too many
+                while len(self.point_ids) > len(self.positions):
+                    p.removeBody(self.point_ids.pop())
+                
+                # Step3: Update points
+                # Update positions of points
+                changed_radii = []
+                for i, pos in enumerate(self.positions):
+                    if p.getVisualShapeData(self.point_ids[i])[0][3][0] == self.radius[i]:
+                        p.resetBasePositionAndOrientation(self.point_ids[i], pos, [0, 0, 0, 1])
+                    else:
+                        changed_radii.append([self.point_ids[i],i])
+
+                # Remove IDs with changed radii and create them new:#
+                if changed_radii is not None:
+                    changed_spheres = 0
+                    for id, i in changed_radii.sort():
+                        i -= changed_spheres
+                        p.removeBody(id) # delete body
+                        # delete entry in positions list
+                        
+                        visual_shape_id = p.createVisualShape(
+                            shapeType=p.GEOM_SPHERE,
+                            radius=self.radius[i], # take the first radius
+                            rgbaColor=self.color,
+                        )
+                        point_id = p.createMultiBody(
+                            baseMass=0,  # No dynamics
+                            baseVisualShapeIndex=visual_shape_id,
+                            basePosition=self.positions[i],  # Initial position (will be updated)
+                        )
+                        self.point_ids.append(point_id)
+                        # move the position and radius of the changed spheres to the end of the 
+                        self.positions.append(self.positions.pop(i))
+                        self.radius.append(self.radius.pop(i))
+
+                        changed_spheres += 1
+
+            else:
+                print("Give the same langth of positions and radii")
+
+
+    def _clear_visuals(self):
+        """Removes all debug lines and points"""
+        for point_id in self.point_ids:
+            p.removeBody(point_id)
+        
+        self.point_ids.clear()
+
+    def __del__(self):
+        """Ensures that all visuals are removed when the object is deleted"""
+        try:
+            self._clear_visuals()
+        except Exception:
+            pass
+
+
 class PathVisual:
     def __init__(self, waypoints=None, line_color=[0, 1, 0], point_color=[1, 0, 0, 1], line_width=2, point_radius=0.02):
         """
@@ -503,23 +719,18 @@ if __name__ == '__main__':
 # TODO: ROS params ,
 # TODO: randomization with random seed, 
 
-# TODO: publish static obstacles once, 
 
-# TODO: publish dynamic obstacles,
-# TODO: publish types of obstacles 
+
 # TODO: Implement different difficulties
-# TODO: Seperate Marker class to mark start and goal of the path
+
 # TODO: input validation
     # if not isinstance(value, int):
     #    raise TypeError("Value must be an integer")
     # if value <= 0:
     #    raise ValueError("Value must be greater than zero")
-# TODO: Add a launch file
+
 # TODO: Change static obstacle publisher to a service
-# TODO: Make custom message type to publish obstacles
 
-
-### ROS MESSAGE shape_msgs/msg/SolidPrimitive Message https://docs.ros2.org/foxy/api/shape_msgs/msg/SolidPrimitive.html
 
 ''' OLD non-ROS main loop: 
 def main(args=None):

@@ -1,3 +1,22 @@
+
+length = 3.0
+
+r_cyl = 0.5
+
+
+num_spheres = int(length // r_cyl)
+
+print(num_spheres)
+print(type(num_spheres))
+a = []
+
+
+b = [30,40,50]
+
+a.extend(b)
+
+print(a)
+'''
 from casadi import MX, vertcat
 
 # Define symbolic variables
@@ -13,7 +32,7 @@ ode = vertcat((1 - x2**2)*x1 - x2 + u, x1)
 
 # Print the size of the ODE vector
 print("Size of ode:", ode.size1(), ode.size2())
-
+'''
 
 
 '''

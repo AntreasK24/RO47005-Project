@@ -11,7 +11,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools'],
+    install_requires=['setuptools','drone_msgs'],
     zip_safe=True,
     maintainer='mukilsaravanan',
     maintainer_email='m.saravanan@student.tudelft.nl',
