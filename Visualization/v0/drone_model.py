@@ -1,9 +1,8 @@
 from casadi import *
 from acados_template import AcadosModel
-from casadi import SX, vertcat, sin, cos, tan
-import numpy as np
+from casadi import SX, vertcat, sin, cos
 
-def export_drone_ode_model(is_state_noise=False, is_input_noise=False) -> AcadosModel:
+def export_drone_ode_model() -> AcadosModel:
     model_name = 'drone_ode'
     
     # Constants (for the drone model)
@@ -59,9 +58,7 @@ def export_drone_ode_model(is_state_noise=False, is_input_noise=False) -> Acados
     # Define the state-space model as: x_dot = A * x + B * u
     f_expl = A @ x + B @ u
 
-
-    # Implicit dynamics (state derivative equals the dynamics)
-    f_impl = xdot - f_expl  
+    f_impl = xdot - f_expl  # Implicit dynamics (state derivative equals the dynamics)
 
     # Define the model
     model = AcadosModel()
