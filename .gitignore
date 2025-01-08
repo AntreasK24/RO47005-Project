@@ -1,1 +1,5 @@
-Visualization/
+acados_ocp_drone_non_linear_ode.json
+acados_ocp_drone_ode.json
+Visualization/v0/c_generated_code
+Visualization/v0/__pycache__
+Visualization/v0/acados_ocp_drone_ode.json
