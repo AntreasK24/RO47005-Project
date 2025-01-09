@@ -1,6 +1,11 @@
 ### Build the container: 
 sudo singularity build ros2_humble_acados_drones.sif path/to/file/singularity_RO47005_drone_ws_V01.def  | tee build_output.txt
 
+##### For Jonah: 
+sudo singularity build ~/RO47005/singularity/ros2_humble_acados_drones_02_mini.sif ../project_assets/singularity/singularity_RO47005_drone_ws_V02_mini.def  | tee ~/RO47005/singularity/build_output.txt
+
+singularity shell --nv ~/RO47005/singularity/ros2_humble_acados_drones_02_mini.sif
+
 ### Run the container: singularity shell --nv path/to/file/ros2_humble_acados_drones.sif 
 
 ### After that:

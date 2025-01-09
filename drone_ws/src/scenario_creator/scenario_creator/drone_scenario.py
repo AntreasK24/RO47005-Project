@@ -39,11 +39,13 @@ class DroneSimulator(Node):
         self.dynamic_obstacle_timer = self.create_timer(0.5, self.timer_dynamic_obstacles)
 
         # Setting up the Enviroment
+        self.velocity_subscriber ### Added from drone_simulator.py
         self.env = VelocityAviary(drone_model=DroneModel.CF2X, num_drones=1, physics=Physics.PYB, ctrl_freq=240, gui=True)
         self.obs = self.env.reset()  
 
 
         #Variables for controlling drone 
+        ### Different from drone_simulator.py
         self.current_linear_velocity = np.array([[0.0, 0.0, 0.0, 1.0]])
         self.current_angular_velocity = np.array([[0.0, 0.0, 0.0]])
         self.current_velocity = np.hstack((self.current_linear_velocity,self.current_angular_velocity))
@@ -168,9 +170,9 @@ class DroneSimulator(Node):
         return pose
 
     def timer_simulation(self):
-        p.stepSimulation()
+        #p.stepSimulation()
 
-        if not self.dynamic_obstacles:
+        if self.dynamic_obstacles:
             ##### UPDATE obstacles
                 # Calculate new position using a sine wave for smooth movement
             x_position = math.sin(self.time) * 2  # Oscillate between -2 and 2 along the x-axis
@@ -204,7 +206,7 @@ class DroneSimulator(Node):
         self.pose_publisher.publish(pose_message)
 
         ###### UPDATE waypoints
-        if self.path is not None:
+        if self.path:
             self.waypoints[0] = self.drone_position
             self.path.update(self.waypoints)
 
@@ -584,7 +586,6 @@ class Marker:
             self._clear_visuals()
         except Exception:
             pass
-
 
 class PathVisual:
     def __init__(self, waypoints=None, line_color=[0, 1, 0], point_color=[1, 0, 0, 1], line_width=2, point_radius=0.02):
