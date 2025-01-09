@@ -14,6 +14,8 @@ find_package(rosidl_default_generators REQUIRED)
 set(msg_files
   "msg/Obstacle.msg"
   "msg/ObstacleArray.msg"
+  "msg/Sphere.msg"
+  "msg/SphereArray.msg"
 )
 
 #set(srv_files
