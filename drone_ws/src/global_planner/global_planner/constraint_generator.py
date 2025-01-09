@@ -47,18 +47,36 @@ class ConstraintNode(Node):
         base_position = base_position - cylinder_axis * length / 2
 
         r_sphere = np.sqrt(r_cyl**2 + r_cyl**2) # sphere radius - will be 1.41 * radius_cylinder
-
+        
+        #self.get_logger().info(f'Base position: {base_position}', once=True)
+        
         num_spheres = int(length // r_cyl)
+        #self.get_logger().info(f'Number of spheres: {num_spheres}', once=True)
 
-        for i in range(num_spheres):
+        for i in range(1,num_spheres):
             sphere = drone_msgs.msg.Sphere()
-            sphere_position = base_position + cylinder_axis * (i+1) * r_sphere
+            sphere_position = base_position + cylinder_axis * i * r_cyl
 
             sphere.position.x = sphere_position[0,0]
             sphere.position.y = sphere_position[1,0]
             sphere.position.z = sphere_position[2,0]
             sphere.radius = r_sphere
             spheres.append(sphere)
+            
+            # Check if enough spheres are created or if another has to be put at the end
+            if i == num_spheres - 1:
+                dist_lastSphere_end = np.linalg.norm((base_position + cylinder_axis * length)-(base_position + cylinder_axis * i * r_cyl))
+                self.get_logger().info(f'Residual distance: {dist_lastSphere_end}', once=True)
+                if dist_lastSphere_end > r_cyl:
+                    sphere = drone_msgs.msg.Sphere()
+                    sphere_position = base_position + cylinder_axis * length - cylinder_axis * r_cyl
+
+                    sphere.position.x = sphere_position[0,0]
+                    sphere.position.y = sphere_position[1,0]
+                    sphere.position.z = sphere_position[2,0]
+                    sphere.radius = r_sphere
+                    spheres.append(sphere)
+
         return spheres
 
     def obstacles_to_spheres(self, obstacle_array):

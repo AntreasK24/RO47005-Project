@@ -66,6 +66,7 @@ class DroneSimulator(Node):
         
         ##### STATC OBSTACLES
             # Create a building (static obstacles)
+        '''
         self.building = Building(
             storeys=2,
             position=[-2, -2, 0],
@@ -76,17 +77,19 @@ class DroneSimulator(Node):
         )
         building_info = self.building.create()
         self.static_obstacles.extend(building_info) if self.static_obstacles is not None else self.static_obstacles.append(building_info) 
-        ''' for object in building_info:
-            print(object)
-            print('-------------------------------------')
         '''
-        
+        cylinder = Obstacle(position=[1,1,1],length=2.0,radius=0.22,geom_shape='cylinder')
+        cylinder_info = cylinder.create()
+        self.static_obstacles.append(cylinder_info)
+
         ##### DYNAMIC OBSTACLES
             # Create a dynamic obstacle
+        
         self.dynamic_obstacle = Obstacle(position=[0,2.0,0.5],color=[0, 1, 0, 0.5], dynamic=True)
         obstacle_info = self.dynamic_obstacle.create()
         self.dynamic_obstacles.append(obstacle_info) 
             #self.dynamic_obstacles.extend(obstacle_info) if self.dynamic_obstacles is not None else self.dynamic_obstacles.append(obstacle_info) 
+        
 
     def velocity_callback(self,msg):
         #Get linear and angular velocity and stack them into a single vector
@@ -124,7 +127,6 @@ class DroneSimulator(Node):
             self.sphere_marker = Marker(sphere_array=self.spheres) #input: SphereArray
         
     def timer_static_obstacles(self):
-
         # Publish static obstacles
         static_obstacles_msg = drone_msgs.msg.ObstacleArray()
         for obstacle in self.static_obstacles:
@@ -141,20 +143,21 @@ class DroneSimulator(Node):
         self.static_obstacles_publisher.publish(static_obstacles_msg)
 
     def timer_dynamic_obstacles(self):
-        # Publish dynamic obstacles
-        dynamic_obstacles_msg = drone_msgs.msg.ObstacleArray()
-        for obstacle in self.dynamic_obstacles:
-            dynamic_obstacle = drone_msgs.msg.Obstacle()
-            dynamic_obstacle.shape = obstacle["geom_shape"]
-            dynamic_obstacle.pose = self.get_pose_from_obstacle(obstacle)
-            if obstacle["geom_shape"] == "cylinder":
-                dynamic_obstacle.size = [obstacle["length"],obstacle["radius"]]
-            else:    
-                dynamic_obstacle.size =  obstacle["size"]
+        if not self.dynamic_obstacles:
+            # Publish dynamic obstacles
+            dynamic_obstacles_msg = drone_msgs.msg.ObstacleArray()
+            for obstacle in self.dynamic_obstacles:
+                dynamic_obstacle = drone_msgs.msg.Obstacle()
+                dynamic_obstacle.shape = obstacle["geom_shape"]
+                dynamic_obstacle.pose = self.get_pose_from_obstacle(obstacle)
+                if obstacle["geom_shape"] == "cylinder":
+                    dynamic_obstacle.size = [obstacle["length"],obstacle["radius"]]
+                else:    
+                    dynamic_obstacle.size =  obstacle["size"]
 
-            dynamic_obstacles_msg.obstacles.append(dynamic_obstacle)
+                dynamic_obstacles_msg.obstacles.append(dynamic_obstacle)
 
-        self.dynamic_obstacles_publisher.publish(dynamic_obstacles_msg)
+            self.dynamic_obstacles_publisher.publish(dynamic_obstacles_msg)
         
     def get_pose_from_obstacle(self, obstacle):
         # Convert obstacle position and orientation to Pose
@@ -167,11 +170,14 @@ class DroneSimulator(Node):
     def timer_simulation(self):
         p.stepSimulation()
 
-        ##### UPDATE obstacles
-            # Calculate new position using a sine wave for smooth movement
-        x_position = math.sin(self.time) * 2  # Oscillate between -2 and 2 along the x-axis
-        self.dynamic_obstacle.update_pose(position=[x_position, 2.0, 0.5])
+        if not self.dynamic_obstacles:
+            ##### UPDATE obstacles
+                # Calculate new position using a sine wave for smooth movement
+            x_position = math.sin(self.time) * 2  # Oscillate between -2 and 2 along the x-axis
+            self.dynamic_obstacle.update_pose(position=[x_position, 2.0, 0.5])
         
+
+        #### Waypoint example
         #new_waypoints = self.path_points + np.array([[0,0,0],[0,0,x_position*0.1],[0,0,x_position*0.1]])
         #new_waypoints[0,:] = self.drone_position
         #self.path.update(new_waypoints)
@@ -283,8 +289,8 @@ class Obstacle():
 class Storey():
     def __init__(self, **kwargs):
         defaults = {
-            "x_length": 10.0,
-            "y_length": 20.0,
+            "x_length": 6.0,
+            "y_length": 8.0,
             "height": 3.0,
             "ceiling_thickness": 0.4, # TODO: Put it in ceiling_Kwargs
             "position": [0.0, 0.0, 0.0],
@@ -302,7 +308,7 @@ class Storey():
 
     def calculate_column_positions(self, x_length, y_length):
         margin = 1  # Distance from edges to column center
-        num_columns_x = int((x_length - 2 * margin) / 4) + 1
+        num_columns_x = int((x_length - 2 * margin) / 4) + 1 # 4 meters of spacing between columns
         num_columns_y = int((y_length - 2 * margin) / 4) + 1
         spacing_x = (x_length - 2 * margin) / max(1, (num_columns_x - 1))
         spacing_y = (y_length - 2 * margin) / max(1, (num_columns_y - 1))
@@ -461,7 +467,7 @@ class Marker:
         self.spheres = sphere_array
         self._variable_radius = True
 
-        if (positions is not None) and (self.radius is not None):
+        if positions and self.radius:
             positions = self._convert_to_list(positions)
             self.positions = positions
             if not isinstance(self.radius,(int,float)):
@@ -536,9 +542,10 @@ class Marker:
                         changed_radii.append([self.point_ids[i],i])
 
                 # Remove IDs with changed radii and create them new:#
-                if changed_radii is not None:
+                if changed_radii:
                     changed_spheres = 0
-                    for id, i in changed_radii.sort():
+                    changed_radii = changed_radii.sort()
+                    for id, i in changed_radii:
                         i -= changed_spheres
                         p.removeBody(id) # delete body
                         # delete entry in positions list
@@ -587,7 +594,7 @@ class PathVisual:
         Parameters:
             waypoints (list or np.ndarray): List or NumPy array of 3D waypoints as [[x1, y1, z1], [x2, y2, z2], ...].
         """
-        self.waypoints = self._convert_to_list(waypoints) if waypoints is not None else []
+        self.waypoints = self._convert_to_list(waypoints) if waypoints else []
         self.line_color = line_color
         self.point_color = point_color
         self.line_width = line_width
