@@ -57,7 +57,6 @@ FROM: ros@sha256:80a4f6329aad64f14b600133cb3fd279d0bf666feeca5abef3f10bb41b0916e
     # Optional Packages:
             # ros-humble-ros-gz \ # Gazebo Sim package (instead of Gazebo classic)
 
-
     # Set locale
     locale-gen en_US en_US.UTF-8
     update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
@@ -73,19 +72,16 @@ FROM: ros@sha256:80a4f6329aad64f14b600133cb3fd279d0bf666feeca5abef3f10bb41b0916e
     echo "[global]" > ~/.config/pip/pip.conf
     echo "timeout = 2000" >> ~/.config/pip/pip.conf
 
-
     # update just the ROS Humble packages to the latest version in the snapshot repository
     apt-get update
     apt-get install -y --only-upgrade ros-${ROS_DISTRO}* 
 
     # We copied the full solution up to here.
-    # Now we can use rosdep install to make sure all the dependecies are 
-    # installed on the image.
+    # Now we can use rosdep install to make sure all the dependecies are installed on the image.
     rosdep update --rosdistro=${ROS_DISTRO}
 
     # Upgrade pip and install Python packages
     pip3 install --upgrade pip
-    # pip3 install casadi 
     
     # Install gym-pybullet-drones
     cd /
@@ -94,7 +90,6 @@ FROM: ros@sha256:80a4f6329aad64f14b600133cb3fd279d0bf666feeca5abef3f10bb41b0916e
  
     pip3 install --upgrade pip
     pip3 install -e . # if needed, `sudo apt install build-essential` to install `gcc` and build `pybullet`
-    #pip install pybullet	
     
     # RO47005: Enable rosdep to find gym_pybullet_drones_packages
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> $HOME/.bashrc
@@ -121,14 +116,12 @@ FROM: ros@sha256:80a4f6329aad64f14b600133cb3fd279d0bf666feeca5abef3f10bb41b0916e
     chmod +x /acados/bin/t_renderer
     echo 'export "PATH=/acados/bin:$PATH"' >> $HOME/.bashrc
 
-
     # Set environment variables for acados
     echo 'export ACADOS_SOURCE_DIR=/acados' >> $HOME/.bashrc
     echo 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/acados/lib"' >> $HOME/.bashrc
 
     # Source ROS 2 setup script
     echo "source /opt/ros/humble/setup.bash" >> $HOME/.bashrc
-
 
     # don't leave unneeded stuff around
     apt-get clean
@@ -142,7 +135,6 @@ FROM: ros@sha256:80a4f6329aad64f14b600133cb3fd279d0bf666feeca5abef3f10bb41b0916e
 PS1="Singularity:\\W> "
 export PS1
 EOF
-
 
 
 %environment
