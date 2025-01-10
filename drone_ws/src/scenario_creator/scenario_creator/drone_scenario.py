@@ -22,21 +22,19 @@ class DroneSimulator(Node):
         super().__init__('drone_simulator')
         
         #Subscriber
-        self.velocity_subscriber = self.create_subscription(Twist,'/cmd_vel',self.velocity_callback,10)
+        self.velocity_subscriber = self.create_subscription(Twist,'/cmd_vel',self.velocity_callback,3)
         self.waypoint_subscriber = self.create_subscription(PoseArray,'/waypoints',self.waypoint_callback,1)
         self.sphere_subscriber = self.create_subscription(drone_msgs.msg.SphereArray,'/spheres',self.sphere_callback,1)
         
         #Publisher
         self.pose_publisher = self.create_publisher(Pose, '/pose', 10)
-        self.static_obstacles_publisher = self.create_publisher(drone_msgs.msg.ObstacleArray, '/static_obstacles', 10)
-        self.dynamic_obstacles_publisher = self.create_publisher(drone_msgs.msg.ObstacleArray, '/dynamic_obstacles', 10)
+        self.obstacles_publisher = self.create_publisher(drone_msgs.msg.ObstacleArray, '/obstacles', 2)
 
         # Timer to publish drone poses and update obstacle lists
         self.timer_period = 1.0/240.0
         self.timer = self.create_timer(self.timer_period,self.timer_simulation)
-        self.static_obstacle_timer = self.create_timer(0.1, self.timer_static_obstacles)
+        self.obstacle_timer = self.create_timer(0.1, self.timer_obstacles)
             # TODO: let static obstacles be handled by a service
-        self.dynamic_obstacle_timer = self.create_timer(0.5, self.timer_dynamic_obstacles)
 
         # Setting up the Enviroment
         self.velocity_subscriber ### Added from drone_simulator.py
@@ -67,7 +65,7 @@ class DroneSimulator(Node):
         
         ##### STATC OBSTACLES
             # Create a building (static obstacles)
-        '''
+        
         self.building = Building(
             storeys=2,
             position=[-2, -2, 0],
@@ -78,10 +76,11 @@ class DroneSimulator(Node):
         )
         building_info = self.building.create()
         self.static_obstacles.extend(building_info) if self.static_obstacles is not None else self.static_obstacles.append(building_info) 
-        '''
-        cylinder = Obstacle(position=[1,1,1],length=2.0,radius=0.22,geom_shape='cylinder')
-        cylinder_info = cylinder.create()
-        self.static_obstacles.append(cylinder_info)
+        
+
+        # cylinder = Obstacle(position=[1,1,1],length=2.0,radius=0.22,geom_shape='cylinder')
+        # cylinder_info = cylinder.create()
+        # self.static_obstacles.append(cylinder_info)
 
         # cylinder = Obstacle(position=[2,1,1],length=2.0,radius=0.1,geom_shape='cylinder')
         # cylinder_info = cylinder.create()
@@ -101,14 +100,14 @@ class DroneSimulator(Node):
         # cylinder_info = cylinder.create()
         # self.static_obstacles.append(cylinder_info)
 
-
+        '''
         ##### DYNAMIC OBSTACLES
             # Create a dynamic obstacle
-        
-        self.dynamic_obstacle = Obstacle(position=[0,2.0,0.5],color=[0, 1, 0, 0.5], dynamic=True)
+        self.dynamic_obstacle = Obstacle(position=[0,3.0,1.0],length=2.0,radius=0.22,color=[0, 1, 0, 0.5],geom_shape='cylinder', dynamic=True)
         obstacle_info = self.dynamic_obstacle.create()
+        self.static_obstacles.append(cylinder_info)
         self.dynamic_obstacles.append(obstacle_info) 
-            #self.dynamic_obstacles.extend(obstacle_info) if self.dynamic_obstacles is not None else self.dynamic_obstacles.append(obstacle_info) 
+        '''
         
 
     def velocity_callback(self,msg):
@@ -149,9 +148,10 @@ class DroneSimulator(Node):
         else:
             self.sphere_marker = Marker(sphere_array=self.spheres) #input: SphereArray
         
-    def timer_static_obstacles(self):
+    #def timer_static_obstacles(self):
+    def timer_obstacles(self):
         # Publish static obstacles
-        static_obstacles_msg = drone_msgs.msg.ObstacleArray()
+        obstacles_msg = drone_msgs.msg.ObstacleArray()
         for obstacle in self.static_obstacles:
             static_obstacle = drone_msgs.msg.Obstacle()
             static_obstacle.shape = obstacle["geom_shape"]
@@ -161,14 +161,14 @@ class DroneSimulator(Node):
             else:    
                 static_obstacle.size =  obstacle["size"]
 
-            static_obstacles_msg.obstacles.append(static_obstacle)
+            obstacles_msg.obstacles.append(static_obstacle)
 
-        self.static_obstacles_publisher.publish(static_obstacles_msg)
 
-    def timer_dynamic_obstacles(self):
-        if not self.dynamic_obstacles:
+
+        #def timer_dynamic_obstacles(self):
+        if self.dynamic_obstacles:
             # Publish dynamic obstacles
-            dynamic_obstacles_msg = drone_msgs.msg.ObstacleArray()
+
             for obstacle in self.dynamic_obstacles:
                 dynamic_obstacle = drone_msgs.msg.Obstacle()
                 dynamic_obstacle.shape = obstacle["geom_shape"]
@@ -178,9 +178,9 @@ class DroneSimulator(Node):
                 else:    
                     dynamic_obstacle.size =  obstacle["size"]
 
-                dynamic_obstacles_msg.obstacles.append(dynamic_obstacle)
+                obstacles_msg.obstacles.append(dynamic_obstacle)
 
-            self.dynamic_obstacles_publisher.publish(dynamic_obstacles_msg)
+        self.obstacles_publisher.publish(obstacles_msg)
         
     def get_pose_from_obstacle(self, obstacle):
         # Convert obstacle position and orientation to Pose
@@ -197,7 +197,7 @@ class DroneSimulator(Node):
             ##### UPDATE obstacles
                 # Calculate new position using a sine wave for smooth movement
             x_position = math.sin(self.time) * 2  # Oscillate between -2 and 2 along the x-axis
-            #self.dynamic_obstacle.update_pose(position=[x_position, 2.0, 0.5])
+            self.dynamic_obstacle.update_pose(position=[x_position, 2.0, 0.5])
         
 
         #### Waypoint example

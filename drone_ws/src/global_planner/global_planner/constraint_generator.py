@@ -9,18 +9,10 @@ class ConstraintNode(Node):
         super().__init__('constraint_node')
         self.static_subscription = self.create_subscription(
             drone_msgs.msg.ObstacleArray,
-            '/static_obstacles',
-            self.static_obstacles_callback,
+            '/obstacles',
+            self.obstacles_callback,
             3)
-        
-        '''
-        self.dynamic_subscription = self.create_subscription(
-            drone_msgs.msg.ObstacleArray,
-            '/dynamic_obstacles',
-            self.dynamic_obstacles_callback,
-            3)
-        '''
-            
+                    
         self.publisher = self.create_publisher(
             drone_msgs.msg.SphereArray,
             '/spheres',
@@ -35,7 +27,7 @@ class ConstraintNode(Node):
         ])
 
 
-    def cylinder_to_sphere(self, pose, length, r_cyl, shape):
+    def cylinder_to_sphere(self, pose, length, r_cyl):
         spheres = []
         # calculate the desired positions and radius of the spheres
         
@@ -81,6 +73,7 @@ class ConstraintNode(Node):
 
     def cuboid_to_sphere(self, pose,x_len,y_len,z_len):
         spheres = []
+
         # calculate the desired positions and radius of the spheres
         # get the position
         center_position = np.array([[pose.position.x],[pose.position.y],[pose.position.z]])
@@ -89,33 +82,35 @@ class ConstraintNode(Node):
         orientation = [pose.orientation.x,pose.orientation.y,pose.orientation.z,pose.orientation.w]
         rotation_matrix = self.quaternion_to_rotation_matrix(orientation)
 
-        base_position = center_position - rotation_matrix.dot(np.array([[x_len], [y_len], [z_len]]))
-
+        base_position = center_position - rotation_matrix.dot(np.array([[x_len], [y_len], [0.0]]))
+        # base_position = center_position - rotation_matrix.dot(np.array([[x_len], [y_len], [z_len]]))
+        
         # get the size
         size = [x_len,y_len,z_len]
-        r_obj = 1.0 if min(size) >= 1.0 else (0.3 if min(size) <= 0.3 else min(size))
+        r_obj = 0.6 if min(size) >= 0.6 else (0.2 if min(size) <= 0.2 else min(size))
         r_sphere = np.sqrt(r_obj**2 + r_obj**2) # sphere radius - will be 1.41 * radius_cylinder
 
         # Determine the number of spheres along each axis
-        num_spheres_x = int(x_len // r_obj)
-        num_spheres_y = int(y_len // r_obj)
-        num_spheres_z = int(z_len // r_obj)
+        num_spheres_x = int(2*x_len // r_obj)
+        num_spheres_y = int(2*y_len // r_obj)
+        # num_spheres_z = int(z_len // r_obj)
 
         # Generate 3D meshgrid of positions
-        x_positions = np.linspace(base_position[0, 0], base_position[0, 0] + x_len, num_spheres_x)
-        y_positions = np.linspace(base_position[1, 0], base_position[1, 0] + y_len, num_spheres_y)
-        z_positions = np.linspace(base_position[2, 0], base_position[2, 0] + z_len, num_spheres_z)
+        x_positions = np.linspace(base_position[0, 0], base_position[0, 0] + 2* x_len, num_spheres_x)
+        y_positions = np.linspace(base_position[1, 0], base_position[1, 0] + 2* y_len, num_spheres_y)
+        # z_positions = np.linspace(base_position[2, 0], base_position[2, 0] + z_len, num_spheres_z)
 
         # Create the meshgrid
-        Xs, Ys, Zs = np.meshgrid(x_positions, y_positions, z_positions)
+        Xs, Ys = np.meshgrid(x_positions, y_positions)
+        # Xs, Ys, Zs = np.meshgrid(x_positions, y_positions, z_positions)
 
         Xs = Xs.flatten()
         Ys = Ys.flatten()
-        Zs = Zs.flatten()
-
+        # Zs = Zs.flatten()
+        self.get_logger().info(f'We got a grid! {num_spheres_x,num_spheres_y}')
         for i in range(len(Xs)):
             sphere = drone_msgs.msg.Sphere()
-            sphere_position = np.array([Xs[i], Ys[i], Zs[i]])
+            sphere_position = np.array([Xs[i], Ys[i], center_position[2, 0]])
             
             # Apply the rotation to the spheres
             rotated_position = rotation_matrix.dot(sphere_position - center_position)
@@ -127,6 +122,7 @@ class ConstraintNode(Node):
             sphere.position.z = float(rotated_position.flatten()[2])
             sphere.radius = r_sphere
             spheres.append(sphere)
+            self.get_logger().info(f'We have a cuboid! {sphere}')
 
         return spheres
 
@@ -141,7 +137,7 @@ class ConstraintNode(Node):
                 length, radius = obstacle.size
                 spheres = self.cylinder_to_sphere(pose, length, radius)
                 sphere_array.extend(spheres)
-            elif obstacle.shape == "cubiod":
+            elif obstacle.shape == "cuboid":
                 pose = obstacle.pose
                 x_len, y_len, z_len = obstacle.size
                 spheres = self.cuboid_to_sphere(pose,x_len,y_len,z_len)
@@ -149,15 +145,9 @@ class ConstraintNode(Node):
         
         return sphere_array
 
-    def dynamic_obstacles_callback(self, dynamic_obstacle_array):
+    def obstacles_callback(self, obstacle_array):
         pub_msg = drone_msgs.msg.SphereArray()
-        pub_msg.spheres = self.obstacles_to_spheres(dynamic_obstacle_array)
-        self.publisher.publish(pub_msg)
-
-
-    def static_obstacles_callback(self, static_obstacle_array):
-        pub_msg = drone_msgs.msg.SphereArray()
-        pub_msg.spheres = self.obstacles_to_spheres(static_obstacle_array)
+        pub_msg.spheres = self.obstacles_to_spheres(obstacle_array)
         self.publisher.publish(pub_msg)
 
 def main(args=None):
