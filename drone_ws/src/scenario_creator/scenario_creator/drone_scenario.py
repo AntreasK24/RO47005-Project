@@ -34,7 +34,7 @@ class DroneSimulator(Node):
         # Timer to publish drone poses and update obstacle lists
         self.timer_period = 1.0/240.0
         self.timer = self.create_timer(self.timer_period,self.timer_simulation)
-        self.static_obstacle_timer = self.create_timer(5, self.timer_static_obstacles)
+        self.static_obstacle_timer = self.create_timer(0.1, self.timer_static_obstacles)
             # TODO: let static obstacles be handled by a service
         self.dynamic_obstacle_timer = self.create_timer(0.5, self.timer_dynamic_obstacles)
 
@@ -45,7 +45,7 @@ class DroneSimulator(Node):
 
 
         #Variables for controlling drone 
-        self.current_linear_velocity = np.array([[10.0, 10.0, 10.0, 1.0]])
+        self.current_linear_velocity = np.array([[0.0, 0.0, 0.0, 1.0]])
         self.current_angular_velocity = np.array([[0.0, 0.0, 0.0]])
         self.current_velocity = np.hstack((self.current_linear_velocity,self.current_angular_velocity))
 
@@ -82,6 +82,25 @@ class DroneSimulator(Node):
         cylinder = Obstacle(position=[1,1,1],length=2.0,radius=0.22,geom_shape='cylinder')
         cylinder_info = cylinder.create()
         self.static_obstacles.append(cylinder_info)
+
+        # cylinder = Obstacle(position=[2,1,1],length=2.0,radius=0.1,geom_shape='cylinder')
+        # cylinder_info = cylinder.create()
+        # self.static_obstacles.append(cylinder_info)
+
+        # cylinder = Obstacle(position=[3,1,1],length=2.0,radius=0.1,geom_shape='cylinder')
+        # cylinder_info = cylinder.create()
+        # self.static_obstacles.append(cylinder_info)
+
+
+
+        # cylinder = Obstacle(position=[1,2,1],length=2.0,radius=0.1,geom_shape='cylinder')
+        # cylinder_info = cylinder.create()
+        # self.static_obstacles.append(cylinder_info)
+
+        # cylinder = Obstacle(position=[1,3,1],length=2.0,radius=0.1,geom_shape='cylinder')
+        # cylinder_info = cylinder.create()
+        # self.static_obstacles.append(cylinder_info)
+
 
         ##### DYNAMIC OBSTACLES
             # Create a dynamic obstacle
@@ -178,7 +197,7 @@ class DroneSimulator(Node):
             ##### UPDATE obstacles
                 # Calculate new position using a sine wave for smooth movement
             x_position = math.sin(self.time) * 2  # Oscillate between -2 and 2 along the x-axis
-            self.dynamic_obstacle.update_pose(position=[x_position, 2.0, 0.5])
+            #self.dynamic_obstacle.update_pose(position=[x_position, 2.0, 0.5])
         
 
         #### Waypoint example

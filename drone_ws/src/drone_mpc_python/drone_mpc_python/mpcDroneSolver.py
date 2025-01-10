@@ -48,7 +48,7 @@ class DroneMPCSolver:
         # Constraints
         ocp.constraints.lbu = np.array([-self.accel_max,-self.accel_max,-self.accel_max])
         ocp.constraints.ubu = np.array([+self.accel_max,+self.accel_max,+self.accel_max])
-        ocp.constraints.lbx = np.array([-1000, -1000, 0]) 
+        ocp.constraints.lbx = np.array([-1000, -1000, -0.1]) 
         ocp.constraints.ubx = np.array([1000, 1000, 100]) 
         ocp.constraints.x0 = init_pos
         ocp.constraints.idxbu = np.array([0,1,2])
@@ -78,7 +78,7 @@ class DroneMPCSolver:
                 ocp.model.con_h_expr = ca.vertcat(ocp.model.con_h_expr, distance_to_obstacle)
 
                 
-                position_threshold = 1.5  # Threshold for repulsion to take effect
+                position_threshold = 10.5  # Threshold for repulsion to take effect
                 
                 # Create a switch that
                 switch = ca.if_else(dist_expr < total_radius ** 2, 0, 1)
