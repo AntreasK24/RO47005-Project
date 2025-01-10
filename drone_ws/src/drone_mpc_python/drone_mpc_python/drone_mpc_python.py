@@ -27,7 +27,7 @@ class DroneMPCNode(Node):
         self.drone_solver = DroneMPCSolver()
 
         self.declare_parameter('initial_state', [0.0,0.0,0.1125,0.0,0.0,0.0])
-        self.declare_parameter('target_pos', [5.0, 5.0, 5.0, 0.0, 0.0, 0.0])
+        self.declare_parameter('target_pos', [6.0, 6.0, 6.0, 0.0, 0.0, 0.0])
 
         self.declare_parameter('accel_max', 500)
         self.declare_parameter('N_horizon', 50)
@@ -59,7 +59,7 @@ class DroneMPCNode(Node):
         self.drone_radius = self.get_parameter('drone_radius').value
 
 
-        num_points = 5        # Number of random points
+        num_points = 10        # Number of random points
         num_dimensions = 3     # Each point will have 3 dimensions (x, y, z)
         lower_bound = 0       # Lower bound of the range
         upper_bound = 5        # Upper bound of the range
@@ -106,6 +106,10 @@ class DroneMPCNode(Node):
         self.ax.set_xlabel("X Position")
         self.ax.set_ylabel("Y Position")
         self.ax.set_zlabel("Z Position")
+
+        # Plot the initial positions of the obstacles
+        self.ax.scatter(self.avoid_pos[:, 0], self.avoid_pos[:, 1], self.avoid_pos[:, 2], c='r', marker='x', label='Obstacles')
+        self.ax.legend()
 
 
     def current_pose_callback(self,msg):

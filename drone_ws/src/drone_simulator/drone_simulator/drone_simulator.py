@@ -26,7 +26,7 @@ class DroneSimulator(Node):
         timer_period = 1.0/240.0
         self.timer = self.create_timer(timer_period,self.timer_callback)
 
-        self.num_points = 5        # Number of points
+        self.num_points = 10       # Number of points
         self.num_dimensions = 3     # Dimensions for each point (e.g., 3D)
 
         self.velocity_subscriber
