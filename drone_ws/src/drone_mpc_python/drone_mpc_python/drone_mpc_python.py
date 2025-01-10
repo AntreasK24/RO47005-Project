@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Pose, Twist, Point
+from geometry_msgs.msg import Pose, Twist, Point,PoseArray
 from std_msgs.msg import Float64MultiArray,Bool
 import numpy as np
 import transforms3d
@@ -78,6 +78,7 @@ class DroneMPCNode(Node):
         self.velocity_pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.reached_point_pub = self.create_publisher(Bool, '/point_reached',10)
         self.avoid_pos_pub_ = self.create_publisher(Float64MultiArray, '/avoid_pos', 10)
+        self.waypoint_pub = self.create_publisher(PoseArray,'/waypoints',1)
 
         #Subscribers
         self.current_pose_sub = self.create_subscription(Pose,'/pose',self.current_pose_callback,10)
@@ -154,9 +155,9 @@ class DroneMPCNode(Node):
     def timer_callback(self):
 
         #Solve optimization problem and get first control input
-        control_input = self.drone_solver.solve(self.initial_state)
+        control_input, predicted_steps = self.drone_solver.solve(self.initial_state)
         self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}")
-        
+        self.visualize_steps(predicted_steps)
 
         if self.noise:
             noise_vel = np.random.normal(0, self.noise_std_vel, size=3)
@@ -181,27 +182,42 @@ class DroneMPCNode(Node):
         # Store the new position for plotting
         self.positions.append(self.initial_state[0:3].copy())
 
-        # Update the 3D plot
-        self.ax.cla()  # Clear the current axes
-        self.ax.set_xlim(-10, 10)
-        self.ax.set_ylim(-10, 10)
-        self.ax.set_zlim(0, 10)
-        self.ax.set_xlabel("X Position")
-        self.ax.set_ylabel("Y Position")
-        self.ax.set_zlabel("Z Position")
+        # # Update the 3D plot
+        # self.ax.cla()  # Clear the current axes
+        # self.ax.set_xlim(-10, 10)
+        # self.ax.set_ylim(-10, 10)
+        # self.ax.set_zlim(0, 10)
+        # self.ax.set_xlabel("X Position")
+        # self.ax.set_ylabel("Y Position")
+        # self.ax.set_zlabel("Z Position")
 
-        # Plot the trajectory as a line
-        x_vals = [pos[0] for pos in self.positions]
-        y_vals = [pos[1] for pos in self.positions]
-        z_vals = [pos[2] for pos in self.positions]
-        self.ax.scatter(self.avoid_pos[:, 0], self.avoid_pos[:, 1], self.avoid_pos[:, 2], c='r', marker='x', label='Obstacles')
-        self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
+        # # Plot the trajectory as a line
+        # x_vals = [pos[0] for pos in self.positions]
+        # y_vals = [pos[1] for pos in self.positions]
+        # z_vals = [pos[2] for pos in self.positions]
+        # self.ax.scatter(self.avoid_pos[:, 0], self.avoid_pos[:, 1], self.avoid_pos[:, 2], c='r', marker='x', label='Obstacles')
+        # self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
 
         # Redraw the plot and pause briefly
-        plt.draw()
-        plt.pause(0.1)
+        # plt.draw()
+        # plt.pause(0.1)
 
-
+    def visualize_steps(self, steps):
+        # steps are a list of states
+        msg = PoseArray()
+        pose_list = []
+        
+        for state in steps:
+            pos = state[:3]
+            pose = Pose()
+            pose.position.x = pos[0]
+            pose.position.y = pos[1]
+            pose.position.z = pos[2]
+            pose_list.append(pose)
+        
+        msg.poses = pose_list
+        self.waypoint_pub.publish(msg)
+        
 
 def main(args=None):
     rclpy.init(args=args)

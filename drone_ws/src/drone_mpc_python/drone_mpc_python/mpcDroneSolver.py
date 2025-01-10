@@ -7,7 +7,7 @@ from drone_mpc_python.drone_model import export_drone_ode_model
 class DroneMPCSolver:
 
     #Constructor
-    def __init__(self,accel_max=500,N_horizon=50,prediction_period=0.05,Q=np.diag([10.0,10.0,10.0,4.0,4.0,4.0]),R=np.diag([0.05,0.05,0.05]),drone_radius = 0.5):        
+    def __init__(self,accel_max=500,N_horizon=200,prediction_period=0.05,Q=np.diag([10.0,10.0,10.0,4.0,4.0,4.0]),R=np.diag([0.05,0.05,0.05]),drone_radius = 0.5):        
         self.Q = Q 
         self.R = R 
         self.accel_max = accel_max
@@ -127,6 +127,6 @@ class DroneMPCSolver:
 
         self.ocp_solver.solve_for_x0(x0_bar=init_pos)
         first_control_input = self.ocp_solver.get(0,"u")
-        
+        predicted_states = [self.ocp_solver.get(i, "x") for i in range(0,200, 20)]
 
-        return first_control_input
+        return first_control_input, predicted_states

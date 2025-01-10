@@ -45,12 +45,7 @@ class DroneSimulator(Node):
 
 
         #Variables for controlling drone 
-<<<<<<< Updated upstream
-        ### Different from drone_simulator.py
-        self.current_linear_velocity = np.array([[0.0, 0.0, 0.0, 1.0]])
-=======
         self.current_linear_velocity = np.array([[10.0, 10.0, 10.0, 1.0]])
->>>>>>> Stashed changes
         self.current_angular_velocity = np.array([[0.0, 0.0, 0.0]])
         self.current_velocity = np.hstack((self.current_linear_velocity,self.current_angular_velocity))
 
