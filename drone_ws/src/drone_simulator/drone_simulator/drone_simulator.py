@@ -26,14 +26,14 @@ class DroneSimulator(Node):
         timer_period = 1.0/240.0
         self.timer = self.create_timer(timer_period,self.timer_callback)
 
-        self.num_points = 10       # Number of points
+        self.num_points = 20       # Number of points
         self.num_dimensions = 3     # Dimensions for each point (e.g., 3D)
 
         self.velocity_subscriber
         self.env = VelocityAviary(drone_model=DroneModel.CF2X, num_drones=1, physics=Physics.PYB, ctrl_freq=240, gui=True)
         self.obs = self.env.reset()  
 
-        self.add_obstacles()
+        #self.add_obstacles()
 
     def add_obstacles(self):
         self.create_obstacles(shape="cube",position=[1,1,0],scale=(0.5,0.5,0.5),color=(0,0,1,1))

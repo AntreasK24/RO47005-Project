@@ -27,7 +27,7 @@ class DroneMPCNode(Node):
         self.drone_solver = DroneMPCSolver()
 
         self.declare_parameter('initial_state', [0.0,0.0,0.1125,0.0,0.0,0.0])
-        self.declare_parameter('target_pos', [6.0, 6.0, 6.0, 0.0, 0.0, 0.0])
+        self.declare_parameter('target_pos', [8.0, 8.0, 8.0, 0.0, 0.0, 0.0])
 
         self.declare_parameter('accel_max', 500)
         self.declare_parameter('N_horizon', 50)
@@ -38,7 +38,7 @@ class DroneMPCNode(Node):
 
         self.declare_parameter('d_min', 1.0)
 
-        self.declare_parameter('noise', False)
+        self.declare_parameter('noise', True)
         self.declare_parameter('noise_std_pos', 0.1)
         self.declare_parameter('noise_std_vel', 0.1)
 
@@ -59,10 +59,10 @@ class DroneMPCNode(Node):
         self.drone_radius = self.get_parameter('drone_radius').value
 
 
-        num_points = 10        # Number of random points
+        num_points = 20        # Number of random points
         num_dimensions = 3     # Each point will have 3 dimensions (x, y, z)
-        lower_bound = 0       # Lower bound of the range
-        upper_bound = 5        # Upper bound of the range
+        lower_bound = 1       # Lower bound of the range
+        upper_bound = 6       # Upper bound of the range
 
         self.avoid_pos = np.random.uniform(low=lower_bound, high=upper_bound, size=(num_points, num_dimensions))
 
@@ -106,10 +106,6 @@ class DroneMPCNode(Node):
         self.ax.set_xlabel("X Position")
         self.ax.set_ylabel("Y Position")
         self.ax.set_zlabel("Z Position")
-
-        # Plot the initial positions of the obstacles
-        self.ax.scatter(self.avoid_pos[:, 0], self.avoid_pos[:, 1], self.avoid_pos[:, 2], c='r', marker='x', label='Obstacles')
-        self.ax.legend()
 
 
     def current_pose_callback(self,msg):
@@ -198,6 +194,7 @@ class DroneMPCNode(Node):
         x_vals = [pos[0] for pos in self.positions]
         y_vals = [pos[1] for pos in self.positions]
         z_vals = [pos[2] for pos in self.positions]
+        self.ax.scatter(self.avoid_pos[:, 0], self.avoid_pos[:, 1], self.avoid_pos[:, 2], c='r', marker='x', label='Obstacles')
         self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
 
         # Redraw the plot and pause briefly

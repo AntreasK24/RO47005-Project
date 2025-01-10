@@ -78,13 +78,13 @@ class DroneMPCSolver:
                 ocp.model.con_h_expr = ca.vertcat(ocp.model.con_h_expr, distance_to_obstacle)
 
                 
-                position_threshold = 2.5  # Threshold for repulsion to take effect
+                position_threshold = 1.5  # Threshold for repulsion to take effect
                 
                 # Create a switch that
                 switch = ca.if_else(dist_expr < total_radius ** 2, 0, 1)
                 
                 # Repulsion term that activates when within the threshold
-                repulsion_term += switch * 0.5 * 50 * ca.power((1 / distance_to_obstacle) - (1 / position_threshold), 2)
+                repulsion_term += switch * 0.5 * 5 * ca.power((1 / distance_to_obstacle) - (1 / position_threshold), 2)
 
             # Add repulsion term to the cost expression
             ocp.model.cost_y_expr = ca.vertcat(ocp.model.cost_y_expr, repulsion_term)
@@ -93,7 +93,7 @@ class DroneMPCSolver:
             ocp.constraints.lh = np.array(lh)
             ocp.constraints.uh = np.array(uh)
 
-            repulsion_weight = np.array([30])
+            repulsion_weight = np.array([20])
 
             ocp.cost.W = scipy.linalg.block_diag(self.Q, self.R, repulsion_weight)
 
@@ -127,7 +127,6 @@ class DroneMPCSolver:
 
         self.ocp_solver.solve_for_x0(x0_bar=init_pos)
         first_control_input = self.ocp_solver.get(0,"u")
-
-        first_control_input
+        
 
         return first_control_input
