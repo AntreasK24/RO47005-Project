@@ -22,5 +22,11 @@ def generate_launch_description():
             package='scenario_creator',
             executable='drone_setup',
             name='drone_setup'
+        ),
+
+        Node(
+            package='drone_mpc_python',
+            executable='drone_mpc_python',
+            name='drone_mpc'
         )
     ])
