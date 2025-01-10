@@ -45,8 +45,12 @@ class DroneSimulator(Node):
 
 
         #Variables for controlling drone 
+<<<<<<< Updated upstream
         ### Different from drone_simulator.py
         self.current_linear_velocity = np.array([[0.0, 0.0, 0.0, 1.0]])
+=======
+        self.current_linear_velocity = np.array([[10.0, 10.0, 10.0, 1.0]])
+>>>>>>> Stashed changes
         self.current_angular_velocity = np.array([[0.0, 0.0, 0.0]])
         self.current_velocity = np.hstack((self.current_linear_velocity,self.current_angular_velocity))
 
@@ -95,9 +99,12 @@ class DroneSimulator(Node):
 
     def velocity_callback(self,msg):
         #Get linear and angular velocity and stack them into a single vector
+
         self.current_linear_velocity = np.array([[msg.linear.x,msg.linear.y,msg.linear.z,1]])
         self.current_angular_velocity = np.array([[msg.angular.x,msg.angular.y,msg.angular.z]])
         self.current_velocity = np.hstack((self.current_linear_velocity,self.current_angular_velocity))
+
+        print(self.current_velocity)
     
     def waypoint_callback(self,msg):
 
@@ -190,6 +197,7 @@ class DroneSimulator(Node):
         pose_message = Pose()
 
         obs, reward, done, truncated, info = self.env.step(self.current_velocity)
+        
 
         position = obs[0][0:3]
         self.drone_position = position

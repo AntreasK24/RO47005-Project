@@ -3,3 +3,4 @@ acados_ocp_drone_ode.json
 Visualization/v0/c_generated_code
 Visualization/v0/__pycache__
 Visualization/v0/acados_ocp_drone_ode.json
+drone_ws/acados_ocp_drone_ode.json

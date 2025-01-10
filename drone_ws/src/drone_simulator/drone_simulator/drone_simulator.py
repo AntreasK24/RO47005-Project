@@ -29,11 +29,12 @@ class DroneSimulator(Node):
         self.env = VelocityAviary(drone_model=DroneModel.CF2X, num_drones=1, physics=Physics.PYB, ctrl_freq=240, gui=True)
         self.obs = self.env.reset()  
 
-        self.add_obstacles()
+        #self.add_obstacles()
 
     def add_obstacles(self):
         self.create_obstacles(shape="cube",position=[1,1,0],scale=(0.5,0.5,0.5),color=(0,0,1,1))
         self.create_obstacles(shape="cylinder",position=[1,0,0],scale=(0.1,1,2),color=(0,0.7,0.5,1))
+        self.create_obstacles(shape="sphere",position=[2,2,2],scale=(0.5,0.5,0.5),color=(0,0.7,0.5,1))
 
 
 
@@ -44,6 +45,9 @@ class DroneSimulator(Node):
         elif shape == 'cylinder':
             collision_shape = p.createCollisionShape(p.GEOM_CYLINDER,radius=scale[0], height=scale[2])
             visual_shape = p.createVisualShape(p.GEOM_CYLINDER, radius=scale[0], length=scale[2], rgbaColor=color)
+        elif shape == 'sphere':
+            collision_shape = p.createCollisionShape(p.GEOM_SPHERE,radius=scale[0])
+            visual_shape = p.createVisualShape(p.GEOM_SPHERE, radius=scale[0], rgbaColor=color)
 
 
         p.createMultiBody(baseMass=0, baseCollisionShapeIndex=collision_shape, baseVisualShapeIndex=visual_shape, basePosition=position)

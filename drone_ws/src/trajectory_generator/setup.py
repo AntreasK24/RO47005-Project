@@ -20,11 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'lemniscate_trajectory_publisher = trajectory_generator.lemniscate_trajectory_publisher:main',
-            'circle_trajectory_publisher = trajectory_generator.circle_trajectory_publisher:main',
-            'linear_trajectory_publisher = trajectory_generator.linear_trajectory_publisher:main',
-            'spiral_trajectory_publisher = trajectory_generator.spiral_trajectory_publisher:main',
-            'zigzag_trajectory_publisher = trajectory_generator.zigzag_trajectory_publisher:main'
+            'trajectory_publisher = trajectory_generator.trajectory_publisher:main',
         ],
     },
 )

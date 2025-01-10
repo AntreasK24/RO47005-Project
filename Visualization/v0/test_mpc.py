@@ -14,6 +14,8 @@ def plot_sphere(ax, center, radius, color='g', alpha=0.5):
 
 def test_mpc_drone_with_visualization():
 
+    noise = False
+
     #Initialize the drone solver
     drone_mpc_solver = DroneMPCSolver()
 
@@ -37,6 +39,10 @@ def test_mpc_drone_with_visualization():
     ax = fig.add_subplot(111, projection='3d')
 
 
+    #Noise parameters
+    noise_std_pos = 0.1  # for position noise
+    noise_std_vel = 0.1  # for velocity noise
+
     #Plot the drone and onstacles
     ax.scatter(target_pos[0], target_pos[1], target_pos[2], c='r', marker='x', s=100, label='Target')
     plot_sphere(ax, avoid_pos1, d_min, color='g', alpha=0.3)
@@ -57,8 +63,16 @@ def test_mpc_drone_with_visualization():
 
         #Get acceleration from the solver and intergrate to get the new position
         control_input = drone_mpc_solver.solve(init_pos)
-        init_pos[3:6] += control_input[0:3] * drone_mpc_solver.prediction_period  
-        init_pos[0:3] += init_pos[3:6] * drone_mpc_solver.prediction_period  
+
+        if noise:
+            noise_vel = np.random.normal(0, noise_std_vel, size=3)
+            noise_pos = np.random.normal(0, noise_std_pos, size=3)
+        else:
+            noise_vel = np.zeros(3)
+            noise_pos = np.zeros(3)
+
+        init_pos[3:6] += (control_input[0:3] * drone_mpc_solver.prediction_period ) + noise_vel 
+        init_pos[0:3] += (init_pos[3:6] * drone_mpc_solver.prediction_period) + noise_pos
 
         trajectory.append(init_pos[0:3].copy())
         velocities.append(init_pos[3:6].copy())

@@ -1,16 +1,21 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Pose, Twist, Point
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Float64MultiArray,Bool
 import numpy as np
 import transforms3d
+import matplotlib.pyplot as plt
+
 from drone_mpc_python.mpcDroneSolver import DroneMPCSolver
+from mpl_toolkits.mplot3d import Axes3D
 
 class DroneMPCNode(Node):
     #Constructor
     def __init__(self):
         super().__init__('drone_mpc')
 
+        self.hover = False
+        self.positions = []
 
         self.Q = np.diag([10.0,10.0,10.0,4.0,4.0,4.0])
         self.R = np.diag([0.05,0.05,0.05])
@@ -22,7 +27,7 @@ class DroneMPCNode(Node):
         self.drone_solver = DroneMPCSolver()
 
         self.declare_parameter('initial_state', [0.0,0.0,0.1125,0.0,0.0,0.0])
-        self.declare_parameter('target_pos', [3.0, 3.0, 3.0, 0.0, 0.0, 0.0])
+        self.declare_parameter('target_pos', [0.0, 0.0, 0.0, 0.1125, 0.0, 0.0])
 
         self.declare_parameter('accel_max', 500)
         self.declare_parameter('N_horizon', 50)
@@ -33,7 +38,7 @@ class DroneMPCNode(Node):
 
         self.declare_parameter('d_min', 1.0)
 
-        self.declare_parameter('noise', True)
+        self.declare_parameter('noise', False)
         self.declare_parameter('noise_std_pos', 0.1)
         self.declare_parameter('noise_std_vel', 0.1)
 
@@ -59,11 +64,14 @@ class DroneMPCNode(Node):
         self.initial_state = np.array(self.get_parameter('initial_state').value)
         self.target_pos = np.array(self.get_parameter('target_pos').value)
 
+        self.avoid_pos = None
+
         #Setup solver
-        self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=None,d_min=0.5)
+        self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5)
 
         #Publisher
         self.velocity_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.reached_point_pub = self.create_publisher(Bool, '/point_reached',10)
 
         #Subscribers
         self.current_pose_sub = self.create_subscription(Pose,'/pose',self.current_pose_callback,10)
@@ -74,10 +82,33 @@ class DroneMPCNode(Node):
         self.dt = 0.02
         self.timer = self.create_timer(self.dt, self.timer_callback)
 
+        # Set up real-time 3D plot
+        plt.ion()  # Turn on interactive mode
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot(111, projection='3d')  # Set 3D projection
+        self.plot_x, self.plot_y, self.plot_z = [], [], []  # To store real-time plot data
+        self.scatter = self.ax.scatter([], [], [])
+        self.ax.set_xlim(-10, 10)  # Set appropriate limits for your scenario
+        self.ax.set_ylim(-10, 10)
+        self.ax.set_zlim(0, 5)  # Adjust Z axis limits as per your needs
+        self.ax.set_xlabel("X Position")
+        self.ax.set_ylabel("Y Position")
+        self.ax.set_zlabel("Z Position")
+
+
     def current_pose_callback(self,msg):
         self.initial_state[:3] = np.array([msg.position.x, msg.position.y, msg.position.z])
-
         
+        distance  =np.linalg.norm(self.initial_state[:3] - self.target_pos[:3])
+
+        if distance < 0.1:
+            self.get_logger().info("Target Reached")
+            
+            point_reached = Bool()
+            point_reached.data = True
+
+            self.reached_point_pub.publish(point_reached)
+
 
     def target_position_callback(self,msg):
         
@@ -89,11 +120,24 @@ class DroneMPCNode(Node):
             self.get_logger().info(f"Received new target position: {new_target_pos}")
             self.target_pos = new_target_pos
 
+            #Set drone to hover
+
+            self.hover = True
+            if self.hover:
+                velocity_msg = Twist()
+                velocity_msg.linear.x = 0.0
+                velocity_msg.linear.y = 0.0
+                velocity_msg.linear.z = 0.0 * self.dt
+
+            self.velocity_pub.publish(velocity_msg)
+
+
             #Destory solver and reinitialize new one (must be a better way to do this)
             self.get_logger().info("Setting up new solver...")
             del self.drone_solver
             self.drone_solver = DroneMPCSolver()
-            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=None,d_min=0.5)
+            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5)
+            self.hover = False
 
     #🍞
     def timer_callback(self):
@@ -105,10 +149,8 @@ class DroneMPCNode(Node):
 
         if self.noise:
             noise_vel = np.random.normal(0, self.noise_std_vel, size=3)
-            noise_pos = np.random.normal(0, self.noise_std_pos, size=3)
         else:
             noise_vel = np.zeros(3)
-            noise_pos = np.zeros(3)
 
         #Publish the velocity
         velocity_msg = Twist()
@@ -116,9 +158,38 @@ class DroneMPCNode(Node):
         velocity_msg.linear.y += (control_input[1] * self.dt) + noise_vel[1]
         velocity_msg.linear.z += (control_input[2] * self.dt) + noise_vel[2]
 
+        if self.hover:
+            velocity_msg.linear.x = 0
+            velocity_msg.linear.y = 0
+            velocity_msg.linear.z += 9.81 * self.dt
+
         self.velocity_pub.publish(velocity_msg)
 
         self.initial_state[3:] = control_input * self.dt
+
+        # Store the new position for plotting
+        self.positions.append(self.initial_state[0:3].copy())
+
+        # Update the 3D plot
+        self.ax.cla()  # Clear the current axes
+        self.ax.set_xlim(-10, 10)
+        self.ax.set_ylim(-10, 10)
+        self.ax.set_zlim(0, 10)
+        self.ax.set_xlabel("X Position")
+        self.ax.set_ylabel("Y Position")
+        self.ax.set_zlabel("Z Position")
+
+        # Plot the trajectory as a line
+        x_vals = [pos[0] for pos in self.positions]
+        y_vals = [pos[1] for pos in self.positions]
+        z_vals = [pos[2] for pos in self.positions]
+        self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
+
+        # Redraw the plot and pause briefly
+        plt.draw()
+        plt.pause(0.1)
+
+
 
 def main(args=None):
     rclpy.init(args=args)

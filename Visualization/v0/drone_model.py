@@ -2,12 +2,16 @@ from casadi import *
 from acados_template import AcadosModel
 from casadi import SX, vertcat, sin, cos
 
-def export_drone_ode_model() -> AcadosModel:
+def export_drone_ode_model(is_state_noise = False, is_input_noise = False) -> AcadosModel:
     model_name = 'drone_ode'
     
     # Constants (for the drone model)
     # Mass of the drone (kg)
     m = 0.027 
+
+    # Noise parameters
+    mu_states = 5.5
+    mu_inputs = 5.5
     
     # States: position and velocity in x, y, z
     x1 = SX.sym('x1')  # position in x
@@ -57,6 +61,18 @@ def export_drone_ode_model() -> AcadosModel:
 
     # Define the state-space model as: x_dot = A * x + B * u
     f_expl = A @ x + B @ u
+
+
+    # With Additive gaussian noise in measurements and actuators
+    if is_state_noise == True:
+        state_dims = len(x_dot)
+        x_dot = x_dot + mu_states*np.random.multivariate_normal(mean=np.zeros(state_dims), cov=np.eye(state_dims), size=state_dims).T #  x_dot = x_dot + state_noise_weight*(standard multi-variate normal distribution) i.e., zero mean and unit standart deviation
+
+    if is_input_noise == True:
+        input_dims = len(inputs)
+        inputs = inputs + mu_inputs*np.random.multivariate_normal(mean=np.zeros(input_dims), cov=np.eye(input_dims), size=input_dims).T #  inputs = inputs + input_noise_weight*(standard multi-variate normal distribution) i.e., zero mean and unit standart deviation
+
+
 
     f_impl = xdot - f_expl  # Implicit dynamics (state derivative equals the dynamics)
 
