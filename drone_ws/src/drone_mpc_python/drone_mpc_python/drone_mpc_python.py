@@ -27,7 +27,7 @@ class DroneMPCNode(Node):
         self.drone_solver = DroneMPCSolver()
 
         self.declare_parameter('initial_state', [0.0,0.0,0.1125,0.0,0.0,0.0])
-        self.declare_parameter('target_pos', [0.0, 0.0, 0.0, 0.1125, 0.0, 0.0])
+        self.declare_parameter('target_pos', [5.0, 5.0, 5.0, 0.0, 0.0, 0.0])
 
         self.declare_parameter('accel_max', 500)
         self.declare_parameter('N_horizon', 50)
@@ -59,12 +59,17 @@ class DroneMPCNode(Node):
         self.drone_radius = self.get_parameter('drone_radius').value
 
 
+        num_points = 5        # Number of random points
+        num_dimensions = 3     # Each point will have 3 dimensions (x, y, z)
+        lower_bound = 0       # Lower bound of the range
+        upper_bound = 5        # Upper bound of the range
+
+        self.avoid_pos = np.random.uniform(low=lower_bound, high=upper_bound, size=(num_points, num_dimensions))
+
 
         #Set initial state and default target position (this  could be a ROS param)
         self.initial_state = np.array(self.get_parameter('initial_state').value)
         self.target_pos = np.array(self.get_parameter('target_pos').value)
-
-        self.avoid_pos = None
 
         #Setup solver
         self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5)
@@ -72,6 +77,7 @@ class DroneMPCNode(Node):
         #Publisher
         self.velocity_pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.reached_point_pub = self.create_publisher(Bool, '/point_reached',10)
+        self.avoid_pos_pub_ = self.create_publisher(Float64MultiArray, '/avoid_pos', 10)
 
         #Subscribers
         self.current_pose_sub = self.create_subscription(Pose,'/pose',self.current_pose_callback,10)
@@ -82,15 +88,21 @@ class DroneMPCNode(Node):
         self.dt = 0.02
         self.timer = self.create_timer(self.dt, self.timer_callback)
 
+
+        positions_flat = self.avoid_pos.flatten()
+        msg = Float64MultiArray()
+        msg.data = positions_flat.tolist()
+        self.avoid_pos_pub_.publish(msg)
+
         # Set up real-time 3D plot
         plt.ion()  # Turn on interactive mode
         self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(111, projection='3d')  # Set 3D projection
-        self.plot_x, self.plot_y, self.plot_z = [], [], []  # To store real-time plot data
+        self.ax = self.fig.add_subplot(111, projection='3d')  
+        self.plot_x, self.plot_y, self.plot_z = [], [], []  
         self.scatter = self.ax.scatter([], [], [])
-        self.ax.set_xlim(-10, 10)  # Set appropriate limits for your scenario
+        self.ax.set_xlim(-10, 10)  
         self.ax.set_ylim(-10, 10)
-        self.ax.set_zlim(0, 5)  # Adjust Z axis limits as per your needs
+        self.ax.set_zlim(0, 5) 
         self.ax.set_xlabel("X Position")
         self.ax.set_ylabel("Y Position")
         self.ax.set_zlabel("Z Position")
@@ -108,7 +120,6 @@ class DroneMPCNode(Node):
             point_reached.data = True
 
             self.reached_point_pub.publish(point_reached)
-
 
     def target_position_callback(self,msg):
         

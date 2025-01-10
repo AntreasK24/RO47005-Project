@@ -4,7 +4,7 @@ import numpy as np
 import time
 import rclpy
 from rclpy.node import Node
-
+from std_msgs.msg import Float64MultiArray
 from geometry_msgs.msg import Twist,Pose
 from gym_pybullet_drones.envs import VelocityAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics
@@ -19,22 +19,35 @@ class DroneSimulator(Node):
         super().__init__('drone_simulator')
         #Subscriber
         self.velocity_subscriber = self.create_subscription(Twist,'/cmd_vel',self.velocity_callback,10)
+        self.avoid_positions_subscriber = self.create_subscription(Float64MultiArray,'/avoid_pos',self.avoid_positions_callback,10)
         #Publisher
         self.pose_publisher = self.create_publisher(Pose, '/pose', 10)
         #Timer
         timer_period = 1.0/240.0
         self.timer = self.create_timer(timer_period,self.timer_callback)
 
+        self.num_points = 5        # Number of points
+        self.num_dimensions = 3     # Dimensions for each point (e.g., 3D)
+
         self.velocity_subscriber
         self.env = VelocityAviary(drone_model=DroneModel.CF2X, num_drones=1, physics=Physics.PYB, ctrl_freq=240, gui=True)
         self.obs = self.env.reset()  
 
-        #self.add_obstacles()
+        self.add_obstacles()
 
     def add_obstacles(self):
         self.create_obstacles(shape="cube",position=[1,1,0],scale=(0.5,0.5,0.5),color=(0,0,1,1))
         self.create_obstacles(shape="cylinder",position=[1,0,0],scale=(0.1,1,2),color=(0,0.7,0.5,1))
-        self.create_obstacles(shape="sphere",position=[2,2,2],scale=(0.5,0.5,0.5),color=(0,0.7,0.5,1))
+        #self.create_obstacles(shape="sphere",position=[2,2,2],scale=(0.5,0.5,0.5),color=(0,0.7,0.5,1))
+
+
+    def avoid_positions_callback(self,msg):
+        data_list = msg.data
+        positions_array = np.array(data_list).reshape((self.num_points, self.num_dimensions))
+
+        for pos in positions_array:
+            self.create_obstacles(shape="sphere",position=pos,scale=(0.5,0.5,0.5),color=(0,0.7,0.5,1))
+
 
 
 
