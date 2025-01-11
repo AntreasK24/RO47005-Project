@@ -52,7 +52,7 @@ class ConstraintNode(Node):
             sphere.position.x = sphere_position[0,0]
             sphere.position.y = sphere_position[1,0]
             sphere.position.z = sphere_position[2,0]
-            sphere.radius = r_sphere
+            sphere.radius = r_sphere + 0.1
             spheres.append(sphere)
             
             # Check if enough spheres are created or if another has to be put at the end
@@ -66,7 +66,7 @@ class ConstraintNode(Node):
                     sphere.position.x = sphere_position[0,0]
                     sphere.position.y = sphere_position[1,0]
                     sphere.position.z = sphere_position[2,0]
-                    sphere.radius = r_sphere
+                    sphere.radius = r_sphere + 0.1
                     spheres.append(sphere)
 
         return spheres

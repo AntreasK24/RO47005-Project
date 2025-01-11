@@ -24,7 +24,7 @@ class DroneSimulator(Node):
         
         #Subscriber
         self.velocity_subscriber = self.create_subscription(Twist,'/cmd_vel',self.velocity_callback,3)
-        self.waypoint_subscriber = self.create_subscription(PoseArray,'/waypoints',self.waypoint_callback,1)
+        # self.waypoint_subscriber = self.create_subscription(PoseArray,'/waypoints',self.waypoint_callback,1)
         self.sphere_subscriber = self.create_subscription(drone_msgs.msg.SphereArray,'/spheres',self.sphere_callback,1)
         self.target_position_sub = self.create_subscription(Float64MultiArray,'/target_pos',self.target_position_callback,10)
 
@@ -79,16 +79,17 @@ class DroneSimulator(Node):
         self.building = Building(
             storeys=2,
             position=[-2, -2, 0],
+
             #storey_kwargs={
             #    "column_kwargs": {"color": [1, 0, 0, 1], "radius": 0.3},
             #    "ceiling_kwargs": {"color": [0.2, 0.2, 0.8, 0.6]},
             #},
         )
-        #building_info = self.building.create()
-        #self.static_obstacles.extend(building_info) if self.static_obstacles is not None else self.static_obstacles.append(building_info) 
+        building_info = self.building.create()
+        self.static_obstacles.extend(building_info) if self.static_obstacles is not None else self.static_obstacles.append(building_info) 
         
 
-        cylinder = Obstacle(position=[1,1,1],length=2.0,radius=0.22,geom_shape='cylinder')
+        cylinder = Obstacle(position=[1,1,1],length=1.8,radius=0.22,geom_shape='cylinder')
         cylinder_info = cylinder.create()
         self.static_obstacles.append(cylinder_info)
 
@@ -151,7 +152,8 @@ class DroneSimulator(Node):
             self.path = PathVisual(self.waypoints)
 
     def target_position_callback(self,target_pos):
-        x,y,z,vx,vy,vz = target_pos.data
+        data = np.array(target_pos.data)
+        x, y, z, = data[0], data[1], data[2] 
         positions = []
         positions.append([x,y,z])
         self.current_target = positions[-1]
@@ -159,9 +161,21 @@ class DroneSimulator(Node):
             if position in self.global_marker:
                 positions.remove(position)
 
-        goal_marker = Marker(positions=positions, radius=0.1, color=[0,0,1,0.1])
+        goal_marker = Marker(positions=positions, radius=0.3, color=[0,0,1,0.1])
         self.global_marker.append(goal_marker)
         self.targets.extend(positions)
+
+        # Vizualize path to target
+        points = []
+        points.append(self.drone_position)
+        points.append(self.current_target)
+
+        self.waypoints = points
+        if self.path is not None:
+            self.path.update(self.waypoints)
+        else:
+            self.path = PathVisual(self.waypoints)
+
 
     def sphere_callback(self,msg):
         self.spheres = msg.spheres # SphereArray
@@ -338,7 +352,7 @@ class Storey():
         defaults = {
             "x_length": 6.0,
             "y_length": 8.0,
-            "height": 4.0,
+            "height": 4.5,
             "ceiling_thickness": 0.4, # TODO: Put it in ceiling_Kwargs
             "position": [0.0, 0.0, 0.0],
             "column_kwargs": {},  # Additional kwargs for columns
@@ -385,7 +399,7 @@ class Storey():
                 self.y_length / 2 + self.position[1],
                 self.height + self.ceiling_thickness + self.position[2],
             ],
-            size=[self.x_length / 2, self.y_length / 2, self.ceiling_thickness],
+            size=[self.x_length / 2, self.y_length / 2, self.ceiling_thickness/2],
             geom_shape="cuboid",
             **self.ceiling_kwargs,
         )

@@ -29,7 +29,7 @@ class DroneMPCNode(Node):
         self.drone_solver = DroneMPCSolver()
 
         self.declare_parameter('initial_state', [0.0,0.0,0.1125,0.0,0.0,0.0])
-        self.declare_parameter('target_pos', [3.0, 3.0, 3.0, 0.0, 0.0, 0.0])
+        self.declare_parameter('target_pos', [0.0, 0.0, 1.0, 0.0, 0.0, 0.0])
 
         self.declare_parameter('accel_max', 500)
         self.declare_parameter('N_horizon', 50)
@@ -146,7 +146,7 @@ class DroneMPCNode(Node):
         
         distance  =np.linalg.norm(self.initial_state[:3] - self.target_pos[:3])
 
-        if distance < 0.1 and self.new_pos == True:
+        if distance < 0.3 and self.new_pos == True:
             self.get_logger().info("Target Reached")
             
             point_reached = Bool()
