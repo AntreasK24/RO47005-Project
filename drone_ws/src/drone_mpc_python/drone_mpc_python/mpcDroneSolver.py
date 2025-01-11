@@ -49,7 +49,7 @@ class DroneMPCSolver:
         ocp.constraints.lbu = np.array([-self.accel_max,-self.accel_max,-self.accel_max])
         ocp.constraints.ubu = np.array([+self.accel_max,+self.accel_max,+self.accel_max])
         ocp.constraints.lbx = np.array([-1000, -1000, -0.1]) 
-        ocp.constraints.ubx = np.array([1000, 1000, 100]) 
+        ocp.constraints.ubx = np.array([1000, 1000, 4]) 
         ocp.constraints.x0 = init_pos
         ocp.constraints.idxbu = np.array([0,1,2])
         ocp.constraints.idxbx = np.array([0, 1, 2])
@@ -97,7 +97,7 @@ class DroneMPCSolver:
                 switch = ca.if_else(dist_expr < total_radius ** 2, 0, 1)
                 
                 # Repulsion term that activates when within the threshold
-                repulsion_term += switch * 0.5 * 5 * ca.power((1 / distance_to_obstacle) - (1 / position_threshold), 2)
+                repulsion_term += switch * 0.5 * 10 * ca.power((1 / distance_to_obstacle) - (1 / position_threshold), 2)
 
             # Add repulsion term to the cost expression
             ocp.model.cost_y_expr = ca.vertcat(ocp.model.cost_y_expr, repulsion_term)

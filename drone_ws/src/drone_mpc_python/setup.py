@@ -10,17 +10,21 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', ['launch/launch_random_demo.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='antreas',
     maintainer_email='a.kourris@students.tudelft.nl',
-    description='TODO: Package description',
+    description='MPC implimentation for a drone',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'drone_mpc_python = drone_mpc_python.drone_mpc_python:main'
         ],
+    'launch.frontend.launch_description_sources': [
+        'launch_random_demo = launch_random_demo.launch.launch_random_demo:generate_launch_description',
+    ],
     },
 )

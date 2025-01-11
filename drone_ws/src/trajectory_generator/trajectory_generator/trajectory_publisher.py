@@ -6,6 +6,7 @@ from geometry_msgs.msg import Point
 from std_msgs.msg import Bool
 from std_msgs.msg import Float64MultiArray
 import math
+import numpy as np
 
 
 def circle_trajectory(t,r=1, is_xy = True):
@@ -66,6 +67,14 @@ def zigzag_trajectory(t,amplitude=1,period=5, is_xy = True):
     return x, y, z
 
 
+def random_trajectory(upper_limit,lower_limit):
+    x,y = np.random.uniform(lower_limit,upper_limit,size=2)
+    z = np.random.uniform(lower_limit,4,size=1)
+
+    return x,y,z
+
+
+
 class TrajectoryPublisher(Node):
     def __init__(self):
         super().__init__('trajectory_publisher')
@@ -74,7 +83,7 @@ class TrajectoryPublisher(Node):
         self.subscriber_ = self.create_subscription(Bool, '/point_reached', self.reached_point_callback, 10)
         self.t = 0.0
 
-        self.declare_parameter('trajectory_type', "Lemniscate")
+        self.declare_parameter('trajectory_type', "Random")
 
         self.trajectory_type = self.get_parameter('trajectory_type').value
 
@@ -99,6 +108,10 @@ class TrajectoryPublisher(Node):
             elif self.trajectory_type == "Zigzag":
                 x, y, z = zigzag_trajectory(self.t)
                 self.t += 0.1
+            elif self.trajectory_type == "Random":
+                x, y, z = random_trajectory(upper_limit=1, lower_limit=5)
+                self.t += 0.1
+
 
             point = Float64MultiArray()
             point.data = [x, y, z]
