@@ -215,42 +215,42 @@ class DroneMPCNode(Node):
         # Store the new position for plotting
         self.positions.append(self.initial_state[0:3].copy())
 
-        # Update the 3D plot
-        #self.ax.clear()
-        self.ax.set_xlim(-10, 10)
-        self.ax.set_ylim(-10, 10)
-        self.ax.set_zlim(0, 10)
-        self.ax.set_xlabel("X Position")
-        self.ax.set_ylabel("Y Position")
-        self.ax.set_zlabel("Z Position")
+        # # Update the 3D plot
+        # #self.ax.clear()
+        # self.ax.set_xlim(-10, 10)
+        # self.ax.set_ylim(-10, 10)
+        # self.ax.set_zlim(0, 10)
+        # self.ax.set_xlabel("X Position")
+        # self.ax.set_ylabel("Y Position")
+        # self.ax.set_zlabel("Z Position")
 
-        # Plot the trajectory as a line
-        # Update the 3D plot
-        self.ax.cla()  
-        self.ax.set_xlim(-10, 10)
-        self.ax.set_ylim(-10, 10)
-        self.ax.set_zlim(0, 10)
-        self.ax.set_xlabel("X Position")
-        self.ax.set_ylabel("Y Position")
-        self.ax.set_zlabel("Z Position")
+        # # Plot the trajectory as a line
+        # # Update the 3D plot
+        # self.ax.cla()  
+        # self.ax.set_xlim(-10, 10)
+        # self.ax.set_ylim(-10, 10)
+        # self.ax.set_zlim(0, 10)
+        # self.ax.set_xlabel("X Position")
+        # self.ax.set_ylabel("Y Position")
+        # self.ax.set_zlabel("Z Position")
 
-        # Plot the trajectory as a line
-        x_vals = [pos[0] for pos in self.positions]
-        y_vals = [pos[1] for pos in self.positions]
-        z_vals = [pos[2] for pos in self.positions]
-        self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
+        # # Plot the trajectory as a line
+        # x_vals = [pos[0] for pos in self.positions]
+        # y_vals = [pos[1] for pos in self.positions]
+        # z_vals = [pos[2] for pos in self.positions]
+        # self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
 
-        if self.avoid_pos is not None:
-            for pos in self.avoid_pos:
-                self.ax.scatter(pos[0], pos[1], pos[2], c='r', marker='x')
+        # if self.avoid_pos is not None:
+        #     for pos in self.avoid_pos:
+        #         self.ax.scatter(pos[0], pos[1], pos[2], c='r', marker='x')
 
-        # Redraw the plot and pause briefly
-        plt.draw()
-        plt.pause(0.1)
+        # # Redraw the plot and pause briefly
+        # plt.draw()
+        # plt.pause(0.1)
 
-        #Redraw the plot and pause briefly
-        plt.draw()
-        plt.pause(0.1)
+        # #Redraw the plot and pause briefly
+        # plt.draw()
+        # plt.pause(0.1)
 
     def visualize_steps(self, steps):
         # steps are a list of states

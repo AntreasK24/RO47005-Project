@@ -13,6 +13,7 @@ from std_msgs.msg import String
 import drone_msgs.msg # import Obstacle, ObstacleArray, SphereArray
 from gym_pybullet_drones.envs import VelocityAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics
+from std_msgs.msg import Float64MultiArray
 
 
 
@@ -25,7 +26,8 @@ class DroneSimulator(Node):
         self.velocity_subscriber = self.create_subscription(Twist,'/cmd_vel',self.velocity_callback,3)
         self.waypoint_subscriber = self.create_subscription(PoseArray,'/waypoints',self.waypoint_callback,1)
         self.sphere_subscriber = self.create_subscription(drone_msgs.msg.SphereArray,'/spheres',self.sphere_callback,1)
-        
+        self.target_position_sub = self.create_subscription(Float64MultiArray,'/target_pos',self.target_position_callback,10)
+
         #Publisher
         self.pose_publisher = self.create_publisher(Pose, '/pose', 10)
         self.obstacles_publisher = self.create_publisher(drone_msgs.msg.ObstacleArray, '/obstacles', 2)
@@ -58,11 +60,19 @@ class DroneSimulator(Node):
         self.dynamic_obstacles = []  # List to track dynamic obstacles
         self.waypoints = [] # List of the current planned waypoints
 
+        self.global_marker = []
+        self.current_target = []
+        self.targets = []
+
         # Create obstacles
         self.setup_environment()
 
     def setup_environment(self):
         
+        # Mark start position
+        start_marker = Marker(positions=[0.0,0.0,0.1125], radius=0.1, color=[0,1,0,0.3])
+        self.global_marker.append(start_marker)
+
         ##### STATC OBSTACLES
             # Create a building (static obstacles)
         
@@ -139,6 +149,19 @@ class DroneSimulator(Node):
             self.path.update(self.waypoints)
         else:
             self.path = PathVisual(self.waypoints)
+
+    def target_position_callback(self,target_pos):
+        x,y,z,vx,vy,vz = target_pos.data
+        positions = []
+        positions.append([x,y,z])
+        self.current_target = positions[-1]
+        for position in positions:        
+            if position in self.global_marker:
+                positions.remove(position)
+
+        goal_marker = Marker(positions=positions, radius=0.1, color=[0,0,1,0.1])
+        self.global_marker.append(goal_marker)
+        self.targets.extend(positions)
 
     def sphere_callback(self,msg):
         self.spheres = msg.spheres # SphereArray
@@ -471,6 +494,7 @@ class Marker:
                 )
                 self.point_ids.append(point_id)
         else:
+            print('HELP')
             for point in self.positions:
                 visual_shape_id = p.createVisualShape(
                     shapeType=p.GEOM_SPHERE,
@@ -503,9 +527,6 @@ class Marker:
                 self._variable_radius = False
                 self.radius = radius
         
-
-
-
         ##### RADII CANNOT BE DYNAMICALLY ADJUSTED, THE OBJECT HAS TO BE REMOVED
 
         # Handle varying lengths: Create or remove spheres as necessary

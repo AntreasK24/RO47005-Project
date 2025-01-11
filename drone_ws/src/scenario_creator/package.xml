@@ -20,6 +20,7 @@
 
   <depend>drone_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
   <depend>time</depend>
 
   <build_depend>gym_pybullet_drones</build_depend>
