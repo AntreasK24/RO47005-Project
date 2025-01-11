@@ -153,13 +153,14 @@ class DroneMPCNode(Node):
         
         distance  =np.linalg.norm(self.initial_state[:3] - self.target_pos[:3])
 
-        if distance < 0.3 and self.new_pos == True:
+        if distance < self.error_tolerance and self.new_pos == True:
             self.get_logger().info("Target Reached")
             
-            point_reached = Bool()
-            point_reached.data = True
-            self.reached_point_pub.publish(point_reached)
             self.new_pos = False
+            self.is_reached.data = not self.new_pos
+            self.reached_point_pub.publish(self.is_reached)
+            self.total_time = 0 # Reset total time after reaching the final position NOTE: comment it when computing for all waypoints within a run
+            
 
     def target_position_callback(self,msg):
         
@@ -187,6 +188,7 @@ class DroneMPCNode(Node):
             self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5)
             self.hover = False
             self.new_pos = True
+            self.is_reached.data = not self.new_pos
 
     
 
@@ -200,7 +202,7 @@ class DroneMPCNode(Node):
 
         stop = timeit.default_timer()
 
-        if self.new_pos: # Compute until reaching the final position
+        if not self.is_reached.data: # Compute until reaching the final position
             time_taken_each_step = stop - start # Compute MPC computation time for each step
             self.total_time += time_taken_each_step # Accumulate MPC computation time
 
