@@ -5,9 +5,17 @@ from rclpy.node import Node
 from geometry_msgs.msg import Point
 from std_msgs.msg import Bool
 from std_msgs.msg import Float64MultiArray
+import drone_msgs.msg
 import math
 import numpy as np
 
+
+
+def check_distance(point,obstacle):
+    center, radius = obstacle
+    distance = np.linalg.norm(point - center)
+    return distance <= radius
+    
 
 def circle_trajectory(t,r=1, is_xy = True):
     if is_xy: 
@@ -67,11 +75,16 @@ def zigzag_trajectory(t,amplitude=1,period=5, is_xy = True):
     return x, y, z
 
 
-def random_trajectory(upper_limit,lower_limit):
-    x,y = np.random.uniform(lower_limit,upper_limit,size=2)
-    z = np.random.uniform(lower_limit,4,size=1)
+def random_trajectory(upper_limit,lower_limit,obstacles):
+    while True:
+        x, y = np.random.uniform(lower_limit, upper_limit, size=2)
+        z = np.random.uniform(lower_limit, 4, size=1)[0]
+        point = np.array([x, y, z])
 
-    return x,y,z
+        if all(not check_distance(point, obstacle) for obstacle in obstacles):
+            break
+
+    return x, y, z
 
 
 
@@ -81,6 +94,7 @@ class TrajectoryPublisher(Node):
         self.publisher_ = self.create_publisher(Float64MultiArray, '/target_pos', 10)
 
         self.subscriber_ = self.create_subscription(Bool, '/point_reached', self.reached_point_callback, 10)
+        self.avoid_pos_sub = self.create_subscription(drone_msgs.msg.SphereArray,'/spheres',self.avoid_pos_callback,1)
         self.t = 0.0
 
         self.declare_parameter('trajectory_type', "Random")
@@ -88,6 +102,14 @@ class TrajectoryPublisher(Node):
         self.trajectory_type = self.get_parameter('trajectory_type').value
 
 
+
+    def avoid_pos_callback(self,msg):
+        self.obstacles = []
+        for sphere in msg.spheres:
+            center = (sphere.center.x, sphere.center.y, sphere.center.z)
+            radius = sphere.radius
+            self.obstacles.append((center, radius))
+    
 
     def reached_point_callback(self, msg):
         if msg.data:
