@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 from drone_mpc_python.mpcDroneSolver import DroneMPCSolver
 from mpl_toolkits.mplot3d import Axes3D
+import timeit
 
 class DroneMPCNode(Node):
     #Constructor
@@ -109,6 +110,12 @@ class DroneMPCNode(Node):
         self.ax.set_ylabel("Y Position")
         self.ax.set_zlabel("Z Position")
 
+        self.is_reached = Bool()
+        self.is_reached.data = False
+        self.total_time = 0
+        self.error_tolerance = 0.3 # Error tolerance at the final goal position
+        
+
     
     def avoid_pos_callback(self,msg):
         if msg is not None:
@@ -151,7 +158,6 @@ class DroneMPCNode(Node):
             
             point_reached = Bool()
             point_reached.data = True
-
             self.reached_point_pub.publish(point_reached)
             self.new_pos = False
 
@@ -188,8 +194,17 @@ class DroneMPCNode(Node):
     def timer_callback(self):
 
         #Solve optimization problem and get first control input
+        start = timeit.default_timer()
+
         control_input, predicted_steps = self.drone_solver.solve(self.initial_state)
-        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}")
+
+        stop = timeit.default_timer()
+
+        if self.new_pos: # Compute until reaching the final position
+            time_taken_each_step = stop - start # Compute MPC computation time for each step
+            self.total_time += time_taken_each_step # Accumulate MPC computation time
+
+        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}, Total time: {self.total_time} s")
         self.visualize_steps(predicted_steps)
 
         if self.noise:
