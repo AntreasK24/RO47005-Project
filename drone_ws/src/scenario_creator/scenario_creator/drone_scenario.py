@@ -74,13 +74,13 @@ class DroneSimulator(Node):
             #    "ceiling_kwargs": {"color": [0.2, 0.2, 0.8, 0.6]},
             #},
         )
-        building_info = self.building.create()
-        self.static_obstacles.extend(building_info) if self.static_obstacles is not None else self.static_obstacles.append(building_info) 
+        #building_info = self.building.create()
+        #self.static_obstacles.extend(building_info) if self.static_obstacles is not None else self.static_obstacles.append(building_info) 
         
 
-        # cylinder = Obstacle(position=[1,1,1],length=2.0,radius=0.22,geom_shape='cylinder')
-        # cylinder_info = cylinder.create()
-        # self.static_obstacles.append(cylinder_info)
+        cylinder = Obstacle(position=[1,1,1],length=2.0,radius=0.22,geom_shape='cylinder')
+        cylinder_info = cylinder.create()
+        self.static_obstacles.append(cylinder_info)
 
         # cylinder = Obstacle(position=[2,1,1],length=2.0,radius=0.1,geom_shape='cylinder')
         # cylinder_info = cylinder.create()

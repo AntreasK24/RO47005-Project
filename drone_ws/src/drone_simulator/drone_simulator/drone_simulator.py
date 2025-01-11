@@ -4,8 +4,9 @@ import numpy as np
 import time
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Float64MultiArray,Bool
 from geometry_msgs.msg import Twist,Pose
+import drone_msgs.msg
 from gym_pybullet_drones.envs import VelocityAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics
 
@@ -20,8 +21,10 @@ class DroneSimulator(Node):
         #Subscriber
         self.velocity_subscriber = self.create_subscription(Twist,'/cmd_vel',self.velocity_callback,10)
         self.avoid_positions_subscriber = self.create_subscription(Float64MultiArray,'/avoid_pos',self.avoid_positions_callback,10)
+        #self.point_reached_subscriber = self.create_subscription(Bool, '/point_reached', self.point_reached_callback, 10)
         #Publisher
         self.pose_publisher = self.create_publisher(Pose, '/pose', 10)
+        self.obstacles_publisher = self.create_publisher(drone_msgs.msg.SphereArray,'/spheres', 2)
         #Timer
         timer_period = 1.0/240.0
         self.timer = self.create_timer(timer_period,self.timer_callback)
@@ -33,12 +36,32 @@ class DroneSimulator(Node):
         self.env = VelocityAviary(drone_model=DroneModel.CF2X, num_drones=1, physics=Physics.PYB, ctrl_freq=240, gui=True)
         self.obs = self.env.reset()  
 
-        #self.add_obstacles()
+        self.add_obstacles()
+
+    
 
     def add_obstacles(self):
-        self.create_obstacles(shape="cube",position=[1,1,0],scale=(0.5,0.5,0.5),color=(0,0,1,1))
-        self.create_obstacles(shape="cylinder",position=[1,0,0],scale=(0.1,1,2),color=(0,0.7,0.5,1))
+        #self.create_obstacles(shape="cube",position=[1,1,0],scale=(0.5,0.5,0.5),color=(0,0,1,1))
+        #self.create_obstacles(shape="cylinder",position=[1,0,0],scale=(0.1,1,2),color=(0,0.7,0.5,1))
         #self.create_obstacles(shape="sphere",position=[2,2,2],scale=(0.5,0.5,0.5),color=(0,0.7,0.5,1))
+
+        new_position = np.random.uniform(low=1, high=5, size=(3,))
+        self.create_obstacles(shape="sphere", position=new_position, scale=(0.5, 0.5, 0.5), color=(0,0.7,0.5,1))
+
+        self.sphere_array_msg = drone_msgs.msg.SphereArray()
+        sphere = drone_msgs.msg.Sphere()
+        for _ in range(10):
+            new_position = np.random.uniform(low=1, high=5, size=(3,))
+            sphere = drone_msgs.msg.Sphere()
+            sphere.position.x = new_position[0]
+            sphere.position.y = new_position[1]
+            sphere.position.z = new_position[2]
+            sphere.radius = 0.5
+            self.sphere_array_msg.spheres.append(sphere)
+
+        self.obstacles_publisher.publish(self.sphere_array_msg)
+        for sphere in self.sphere_array_msg.spheres:
+            self.create_obstacles(shape="sphere", position=[sphere.position.x, sphere.position.y, sphere.position.z], scale=(sphere.radius, sphere.radius, sphere.radius), color=(0,0.7,0.5,1))
 
 
     def avoid_positions_callback(self,msg):
@@ -49,7 +72,30 @@ class DroneSimulator(Node):
             self.create_obstacles(shape="sphere",position=pos,scale=(0.5,0.5,0.5),color=(0,0.7,0.5,1))
 
 
+    # def point_reached_callback(self, msg):
+    #     if msg.data:
+    #         new_position = np.random.uniform(low=1, high=5, size=(3,))
+    #         self.create_obstacles(shape="sphere", position=new_position, scale=(0.5, 0.5, 0.5), color=(0,0.7,0.5,1))
 
+    #         sphere_array_msg = drone_msgs.msg.SphereArray()
+    #         sphere = drone_msgs.msg.Sphere()
+    #         for _ in range(5):
+    #             new_position = np.random.uniform(low=1, high=5, size=(3,))
+    #             sphere = drone_msgs.msg.Sphere()
+    #             sphere.position.x = new_position[0]
+    #             sphere.position.y = new_position[1]
+    #             sphere.position.z = new_position[2]
+    #             sphere.radius = 0.5
+    #             sphere_array_msg.spheres.append(sphere)
+    #         sphere.position.x = new_position[0]
+    #         sphere.position.y = new_position[1]
+    #         sphere.position.z = new_position[2]
+    #         sphere.radius = 0.5
+    #         sphere_array_msg.spheres.append(sphere)
+    #         self.obstacles_publisher.publish(sphere_array_msg)
+
+
+    
 
     def create_obstacles(self,shape="cube",position=[0,0,0],color=[1,0,0,1],scale=(1,1,1)):
         if shape == 'cube':
@@ -79,6 +125,7 @@ class DroneSimulator(Node):
         
 
     def timer_callback(self):
+        self.obstacles_publisher.publish(self.sphere_array_msg)
         #Give velocity commands to drone and publish position
         pose_message = Pose()
 
