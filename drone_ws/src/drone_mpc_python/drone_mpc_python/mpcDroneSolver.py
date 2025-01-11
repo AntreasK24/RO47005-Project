@@ -39,7 +39,7 @@ class DroneMPCSolver:
         ocp.cost.W_e = self.Q
 
         # Define the reference (desired) target in the cost
-        target_state = np.array([target_pos[0], target_pos[1], target_pos[2], 0.0, 0.0, 0.0])
+        target_state = np.array(target_pos) #np.array([target_pos[0], target_pos[1], target_pos[2], 0.0, 0.0, 0.0])
         ocp.model.cost_y_expr = ca.vertcat(ocp.model.x - target_state, ocp.model.u)
         ocp.model.cost_y_expr_e = ocp.model.x - target_state
         ocp.cost.yref  = np.zeros((ny, ))
@@ -58,6 +58,19 @@ class DroneMPCSolver:
 
         if ocp.model.con_h_expr is None:
             ocp.model.con_h_expr = ca.SX()
+
+
+
+
+        #Add atraction force
+        attraction_weight = np.diag([10.0,10.0,10.0])
+        attraction_term =  -0.5 * 1 * ca.power((ocp.model.x[:3]) - (target_state[:3]), 2)
+        ocp.model.cost_y_expr = ca.vertcat(ocp.model.cost_y_expr, attraction_term)
+        ocp.cost.yref = np.append(ocp.cost.yref, 1.0)
+        ocp.cost.yref = np.append(ocp.cost.yref, 1.0)
+        ocp.cost.yref = np.append(ocp.cost.yref, 1.0)
+        ocp.cost.W = scipy.linalg.block_diag(self.Q, self.R, attraction_weight)
+
         
         if avoid_pos is not None:
 
@@ -94,8 +107,9 @@ class DroneMPCSolver:
             ocp.constraints.uh = np.array(uh)
 
             repulsion_weight = np.array([20])
+            
 
-            ocp.cost.W = scipy.linalg.block_diag(self.Q, self.R, repulsion_weight)
+            ocp.cost.W = scipy.linalg.block_diag(self.Q, self.R, attraction_weight,repulsion_weight)
 
 
         # Set prediction horizon
