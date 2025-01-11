@@ -126,6 +126,18 @@ class ConstraintNode(Node):
 
         return spheres
 
+    def sphere_to_sphere(self,pose,r_sphere):
+        spheres = []
+        sphere = drone_msgs.msg.Sphere()
+
+        sphere.position.x = pose.position.x
+        sphere.position.y = pose.position.y
+        sphere.position.z = pose.position.z
+        sphere.radius = r_sphere
+        spheres.append(sphere)
+        # calculate the desired positions and radius of the spheres
+        
+        return spheres
 
     def obstacles_to_spheres(self, obstacle_array):
         sphere_array = []
@@ -137,12 +149,20 @@ class ConstraintNode(Node):
                 length, radius = obstacle.size
                 spheres = self.cylinder_to_sphere(pose, length, radius)
                 sphere_array.extend(spheres)
+            elif obstacle.shape == "sphere":
+                pose = obstacle.pose
+                radius = obstacle.size
+                spheres = self.sphere_to_sphere(pose,radius)
+                sphere_array.extend(spheres)
+            ''' To computationally expensive
             elif obstacle.shape == "cuboid":
                 pose = obstacle.pose
                 x_len, y_len, z_len = obstacle.size
                 spheres = self.cuboid_to_sphere(pose,x_len,y_len,z_len)
                 sphere_array.extend(spheres)
-        
+            '''
+
+            
         return sphere_array
 
     def obstacles_callback(self, obstacle_array):

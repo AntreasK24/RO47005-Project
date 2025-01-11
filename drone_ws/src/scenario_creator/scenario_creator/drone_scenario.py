@@ -108,7 +108,7 @@ class DroneSimulator(Node):
         self.static_obstacles.append(cylinder_info)
         self.dynamic_obstacles.append(obstacle_info) 
         '''
-        
+
 
     def velocity_callback(self,msg):
         #Get linear and angular velocity and stack them into a single vector
@@ -315,7 +315,7 @@ class Storey():
         defaults = {
             "x_length": 6.0,
             "y_length": 8.0,
-            "height": 3.0,
+            "height": 4.0,
             "ceiling_thickness": 0.4, # TODO: Put it in ceiling_Kwargs
             "position": [0.0, 0.0, 0.0],
             "column_kwargs": {},  # Additional kwargs for columns
