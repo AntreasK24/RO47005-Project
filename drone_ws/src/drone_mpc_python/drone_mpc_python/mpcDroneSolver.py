@@ -49,7 +49,7 @@ class DroneMPCSolver:
         ocp.constraints.lbu = np.array([-self.accel_max,-self.accel_max,-self.accel_max])
         ocp.constraints.ubu = np.array([+self.accel_max,+self.accel_max,+self.accel_max])
         ocp.constraints.lbx = np.array([-1000, -1000, -0.1]) 
-        ocp.constraints.ubx = np.array([1000, 1000, 100]) 
+        ocp.constraints.ubx = np.array([1000, 1000, 4]) 
         ocp.constraints.x0 = init_pos
         ocp.constraints.idxbu = np.array([0,1,2])
         ocp.constraints.idxbx = np.array([0, 1, 2])

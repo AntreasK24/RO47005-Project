@@ -68,7 +68,8 @@ def zigzag_trajectory(t,amplitude=1,period=5, is_xy = True):
 
 
 def random_trajectory(upper_limit,lower_limit):
-    x,y,z = np.random.uniform(lower_limit,upper_limit,size=3)
+    x,y = np.random.uniform(lower_limit,upper_limit,size=2)
+    z = np.random.uniform(lower_limit,4,size=1)
 
     return x,y,z
 

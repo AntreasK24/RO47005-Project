@@ -29,7 +29,7 @@ class DroneMPCNode(Node):
         self.drone_solver = DroneMPCSolver()
 
         self.declare_parameter('initial_state', [0.0,0.0,0.1125,0.0,0.0,0.0])
-        self.declare_parameter('target_pos', [7.0, 7.0, 7.0, 0.0, 0.0, 0.0])
+        self.declare_parameter('target_pos', [3.0, 3.0, 3.0, 0.0, 0.0, 0.0])
 
         self.declare_parameter('accel_max', 500)
         self.declare_parameter('N_horizon', 50)
@@ -38,7 +38,7 @@ class DroneMPCNode(Node):
         self.declare_parameter('R', self.R)
         self.declare_parameter('drone_radius', 0.5)
 
-        self.declare_parameter('d_min', 1.0)
+        self.declare_parameter('d_min', 0.5)
 
         self.declare_parameter('noise', False)
         self.declare_parameter('noise_std_pos', 0.1)
