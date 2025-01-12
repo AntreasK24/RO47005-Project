@@ -12,6 +12,8 @@ from drone_mpc_python.mpcDroneSolver import DroneMPCSolver
 from mpl_toolkits.mplot3d import Axes3D
 import timeit
 import time
+import json
+from datetime import datetime
 
 class DroneMPCNode(Node):
     #Constructor
@@ -124,6 +126,15 @@ class DroneMPCNode(Node):
         self.start_time = None
 
         self.logs = {"control_effort": [], "computation_time": [], "norm_inputs": [], "endpoint_tracking_error": []}
+
+    def save_logs(self):
+        current_time = datetime.now()
+        unique_name = current_time.strftime("%Y%m%d_%H%M%S")
+        filename = "logs_"+unique_name+".json"
+
+        with open(filename, 'w') as f:
+            json.dump(self.logs, f)
+        print(f"Evaluation Metrics Logs saved to {filename}")
     
     def avoid_pos_callback(self,msg):
         if msg is not None:
@@ -321,15 +332,20 @@ class DroneMPCNode(Node):
         
 
 def main(args=None):
-    rclpy.init(args=args)
+    try:
+        rclpy.init(args=args)
+        drone_mpc_node = DroneMPCNode()
+        rclpy.spin(drone_mpc_node)
 
-    drone_mpc_node = DroneMPCNode()
+    except KeyboardInterrupt:
+        # Saving logs for post-processing
+        drone_mpc_node.get_logger().info("Saving logs for post-processing")
+        drone_mpc_node.save_logs()
 
-    rclpy.spin(drone_mpc_node)
-
-    # Destroy the node explicitly
-    drone_mpc_node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        # Destroy the node explicitly
+        drone_mpc_node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
