@@ -17,9 +17,9 @@ def generate_launch_description():
             name='drone_simulator'
         ),
 
-        Node(
-            package='trajectory_generator',
-            executable='trajectory_publisher',
-            name='trajectory_publisher'
-        )
+        # Node(
+        #     package='trajectory_generator',
+        #     executable='trajectory_publisher',
+        #     name='trajectory_publisher'
+        # )
     ])

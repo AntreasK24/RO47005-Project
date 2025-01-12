@@ -46,11 +46,11 @@ class DroneSimulator(Node):
         #self.create_obstacles(shape="sphere",position=[2,2,2],scale=(0.5,0.5,0.5),color=(0,0.7,0.5,1))
 
         new_position = np.random.uniform(low=1, high=5, size=(3,))
-        self.create_obstacles(shape="sphere", position=new_position, scale=(0.5, 0.5, 0.5), color=(0,0.7,0.5,1))
+        # self.create_obstacles(shape="sphere", position=new_position, scale=(0.5, 0.5, 0.5), color=(0,0.7,0.5,1))
 
         self.sphere_array_msg = drone_msgs.msg.SphereArray()
         sphere = drone_msgs.msg.Sphere()
-        for _ in range(10):
+        for _ in range(0):
             new_position = np.random.uniform(low=1, high=5, size=(3,))
             sphere = drone_msgs.msg.Sphere()
             sphere.position.x = new_position[0]
