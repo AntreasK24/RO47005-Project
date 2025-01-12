@@ -28,5 +28,11 @@ def generate_launch_description():
             package='drone_mpc_python',
             executable='drone_mpc_python',
             name='drone_mpc'
+        ),
+
+        Node(
+            package='trajectory_generator',
+            executable='trajectory_publisher',
+            name='trajectory_publisher'
         )
     ])

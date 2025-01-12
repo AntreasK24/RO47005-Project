@@ -12,9 +12,11 @@ import numpy as np
 
 
 def check_distance(point,obstacle):
-    center, radius = obstacle
-    distance = np.linalg.norm(point - center)
-    return distance <= radius
+    if obstacle is not None:
+        center, radius = obstacle
+        distance = np.linalg.norm(point - center)
+        return (distance)<= radius + 0.4 # safety distance from obstacles
+    
     
 
 def circle_trajectory(t,r=1, is_xy = True):
@@ -76,10 +78,14 @@ def zigzag_trajectory(t,amplitude=1,period=5, is_xy = True):
 
 
 def random_trajectory(upper_limit,lower_limit,obstacles):
+
     while True:
         x, y = np.random.uniform(lower_limit, upper_limit, size=2)
-        z = np.random.uniform(lower_limit, 4, size=1)[0]
+        z = np.random.uniform(lower_limit, 3.9, size=1)[0]
         point = np.array([x, y, z])
+
+        if z < lower_limit or z > 4:
+            continue
 
         if all(not check_distance(point, obstacle) for obstacle in obstacles):
             break
@@ -131,7 +137,7 @@ class TrajectoryPublisher(Node):
                 x, y, z = zigzag_trajectory(self.t)
                 self.t += 0.1
             elif self.trajectory_type == "Random":
-                x, y, z = random_trajectory(upper_limit=1, lower_limit=5)
+                x, y, z = random_trajectory(lower_limit=1, upper_limit=7,obstacles=self.obstacles)
                 self.t += 0.1
 
 

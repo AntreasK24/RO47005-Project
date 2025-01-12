@@ -24,7 +24,7 @@ class DroneSimulator(Node):
         
         #Subscriber
         self.velocity_subscriber = self.create_subscription(Twist,'/cmd_vel',self.velocity_callback,3)
-        self.waypoint_subscriber = self.create_subscription(PoseArray,'/waypoints',self.waypoint_callback,1)
+        # self.waypoint_subscriber = self.create_subscription(PoseArray,'/waypoints',self.waypoint_callback,1)
         self.sphere_subscriber = self.create_subscription(drone_msgs.msg.SphereArray,'/spheres',self.sphere_callback,1)
         self.target_position_sub = self.create_subscription(Float64MultiArray,'/target_pos',self.target_position_callback,10)
 
@@ -55,6 +55,7 @@ class DroneSimulator(Node):
         self.sphere_marker = None #Marker Type
 
         self.time = 0.0
+        self.time_step = 0
 
         self.static_obstacles = []  # List to track static obstacles
         self.dynamic_obstacles = []  # List to track dynamic obstacles
@@ -63,6 +64,9 @@ class DroneSimulator(Node):
         self.global_marker = []
         self.current_target = []
         self.targets = []
+
+        self.past_drone_positions = []
+        self.past_path = None
 
         # Create obstacles
         self.setup_environment()
@@ -77,18 +81,20 @@ class DroneSimulator(Node):
             # Create a building (static obstacles)
         
         self.building = Building(
-            storeys=2,
+            storeys=3,
             position=[-2, -2, 0],
-            #storey_kwargs={
+            storey_kwargs={
+                "x_length": 12.0,
+                "y_length": 20.0,
             #    "column_kwargs": {"color": [1, 0, 0, 1], "radius": 0.3},
             #    "ceiling_kwargs": {"color": [0.2, 0.2, 0.8, 0.6]},
-            #},
+            },
         )
-        #building_info = self.building.create()
-        #self.static_obstacles.extend(building_info) if self.static_obstacles is not None else self.static_obstacles.append(building_info) 
+        building_info = self.building.create()
+        self.static_obstacles.extend(building_info) if self.static_obstacles is not None else self.static_obstacles.append(building_info) 
         
 
-        cylinder = Obstacle(position=[1,1,1],length=2.0,radius=0.22,geom_shape='cylinder')
+        cylinder = Obstacle(position=[1,1,1],length=1.8,radius=0.22,geom_shape='cylinder')
         cylinder_info = cylinder.create()
         self.static_obstacles.append(cylinder_info)
 
@@ -151,7 +157,8 @@ class DroneSimulator(Node):
             self.path = PathVisual(self.waypoints)
 
     def target_position_callback(self,target_pos):
-        x,y,z,vx,vy,vz = target_pos.data
+        data = np.array(target_pos.data)
+        x, y, z, = data[0], data[1], data[2] 
         positions = []
         positions.append([x,y,z])
         self.current_target = positions[-1]
@@ -159,9 +166,21 @@ class DroneSimulator(Node):
             if position in self.global_marker:
                 positions.remove(position)
 
-        goal_marker = Marker(positions=positions, radius=0.1, color=[0,0,1,0.1])
+        goal_marker = Marker(positions=positions, radius=0.3, color=[0,0,1,0.25])
         self.global_marker.append(goal_marker)
         self.targets.extend(positions)
+
+        # Vizualize path to target
+        points = []
+        points.append(self.drone_position)
+        points.append(self.current_target)
+
+        self.waypoints = points
+        if self.path is not None:
+            self.path.update(self.waypoints)
+        else:
+            self.path = PathVisual(self.waypoints)
+
 
     def sphere_callback(self,msg):
         self.spheres = msg.spheres # SphereArray
@@ -255,9 +274,27 @@ class DroneSimulator(Node):
             self.waypoints[0] = self.drone_position
             self.path.update(self.waypoints)
 
-        # TODO self.dynamic_obstacles_publisher.publish()
+        if (self.time_step % 240) == 0:
+            if not self.past_drone_positions or not np.allclose(self.past_drone_positions[-1], self.drone_position, atol=1e-3):
+                # Append the current position as it has changed noticeably
+                self.past_drone_positions.append(self.drone_position)
+
+                # If past_path hasn't been initialized, create it
+                if not self.past_path:
+                    self.past_path = PathVisual(
+                                        self.past_drone_positions.copy(),  
+                                        line_color=[0, 0, 1], 
+                                        point_color=[0, 1, 1, 1], 
+                                        line_width=2, 
+                                        point_radius=0.02
+                                    )
+                else:
+                    # Otherwise, update the path visualization
+                    self.past_path.update(self.past_drone_positions.copy())
+
 
         self.time += self.timer_period
+        self.time_step += 1
 
 
 class Obstacle():
@@ -399,7 +436,7 @@ class Building():
         defaults = {
             "storeys": 1,
             "position": [0.0, 0.0, 0.0],
-            "storey_height": 3.0,
+            "storey_height": 4.0,
             "storey_ceiling_thickness": 0.4, # TODO: include in storey_kwargs
             "storey_kwargs": {},  # Additional kwargs for storeys
         }
@@ -782,57 +819,3 @@ if __name__ == '__main__':
 
 # TODO: Change static obstacle publisher to a service
 
-
-''' OLD non-ROS main loop: 
-def main(args=None):
-        # Connect to PyBullet simulation
-    physics_client = p.connect(p.GUI)  # Use p.DIRECT for non-GUI mode
-    p.setAdditionalSearchPath(pybullet_data.getDataPath())  # Set path to PyBullet data
-
-    p.setGravity(0, 0, -9.81)  # Set gravity
-    plane_id = p.loadURDF("plane.urdf")  # Load a plane
-
-    time_step = 1 / 240  # Simulate manually with real-time pacing
-    #p.setRealTimeSimulation(1) (does not work but should in theory)
-    t = 0  # Time variable for dynamic obstacles
-
-
-    building = Building(
-        storeys=3,
-        position=[-2, -2, 0],
-        #storey_kwargs={
-        #    "column_kwargs": {"color": [1, 0, 0, 1], "radius": 0.3},
-        #    "ceiling_kwargs": {"color": [0.2, 0.2, 0.8, 0.6]},
-        #},
-    )
-    building.create()
-
-
-    dynamic_obstacle = Obstacle(color=[0,1,0,0.5], dynamic=True)
-    dynamic_obstacle.create()
-
-
-    # Visualize a path 
-    path_points = np.array([[0, 0, 0], [1, 1, 0.5], [2, 2, 1.5]])
-    print(path_points)
-    path = PathVisual(path_points)
-    print(path.waypoints)
-
-
-    while p.isConnected():
-        p.stepSimulation()
-        time.sleep(time_step)  # Pause to match real time
-
-        
-        # Calculate new position using a sine wave for smooth movement
-        x_position = math.sin(t) * 2  # Oscillate between -2 and 2 along the x-axis
-        dynamic_obstacle.update_pose(position=[x_position, 0, 0.5],orientation=[0, 0, 0, 1])
-
-        new_waypoints = path_points + np.array([[0,0,0],[0,0,x_position*0.1],[0,0,x_position*0.1]])
-        path.update(new_waypoints)
-
-        t += time_step  # Increment time
-        
-
-    p.disconnect()
-'''

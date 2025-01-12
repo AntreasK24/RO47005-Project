@@ -29,7 +29,7 @@ class DroneMPCNode(Node):
         self.drone_solver = DroneMPCSolver()
 
         self.declare_parameter('initial_state', [0.0,0.0,0.1125,0.0,0.0,0.0])
-        self.declare_parameter('target_pos', [3.0, 3.0, 3.0, 0.0, 0.0, 0.0])
+        self.declare_parameter('target_pos', [0.0, 0.0, 1.0, 0.0, 0.0, 0.0])
 
         self.declare_parameter('accel_max', 500)
         self.declare_parameter('N_horizon', 50)
@@ -96,18 +96,18 @@ class DroneMPCNode(Node):
         self.dt = 0.02
         self.timer = self.create_timer(self.dt, self.timer_callback)
 
-        #Set up real-time 3D plot
-        plt.ion()  # Turn on interactive mode   
-        self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(111, projection='3d')  
-        self.plot_x, self.plot_y, self.plot_z = [], [], []  
-        self.scatter = self.ax.scatter([], [], [])
-        self.ax.set_xlim(-10, 10)  
-        self.ax.set_ylim(-10, 10)
-        self.ax.set_zlim(0, 5) 
-        self.ax.set_xlabel("X Position")
-        self.ax.set_ylabel("Y Position")
-        self.ax.set_zlabel("Z Position")
+        # #Set up real-time 3D plot
+        # plt.ion()  # Turn on interactive mode   
+        # self.fig = plt.figure()
+        # self.ax = self.fig.add_subplot(111, projection='3d')  
+        # self.plot_x, self.plot_y, self.plot_z = [], [], []  
+        # self.scatter = self.ax.scatter([], [], [])
+        # self.ax.set_xlim(-10, 10)  
+        # self.ax.set_ylim(-10, 10)
+        # self.ax.set_zlim(0, 5) 
+        # self.ax.set_xlabel("X Position")
+        # self.ax.set_ylabel("Y Position")
+        # self.ax.set_zlabel("Z Position")
 
     
     def avoid_pos_callback(self,msg):
@@ -146,7 +146,7 @@ class DroneMPCNode(Node):
         
         distance  =np.linalg.norm(self.initial_state[:3] - self.target_pos[:3])
 
-        if distance < 0.1 and self.new_pos == True:
+        if distance < 0.3 and self.new_pos == True:
             self.get_logger().info("Target Reached")
             
             point_reached = Bool()
