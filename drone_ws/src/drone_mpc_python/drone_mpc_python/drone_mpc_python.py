@@ -125,7 +125,7 @@ class DroneMPCNode(Node):
         self.settling_time_period = 5 # Approximating settling time (in seconds)
         self.start_time = None
 
-        self.logs = {"control_effort": [], "computation_time": [], "norm_inputs": [], "endpoint_tracking_error": []}
+        self.logs = {"dt": self.dt,"control_effort": [], "computation_time": [], "norm_inputs": [], "endpoint_tracking_error": [], "drone_position": []}
 
     def save_logs(self):
         current_time = datetime.now()
@@ -241,16 +241,16 @@ class DroneMPCNode(Node):
         if not self.is_reached.data: # Compute until reaching the final position
             time_taken_each_step = stop - start # Compute MPC computation time for each step
             self.total_time += time_taken_each_step # Accumulate MPC computation time
-
             self.control_effort += (np.sum(np.abs(control_input)) * self.dt) # control_effort = integrate abs(control_inputs) dt
             
             self.logs["computation_time"].append(time_taken_each_step) # Saving instantaneous computation time of the MPC solver
             self.logs["control_effort"].append(np.sum(np.abs(control_input)*self.dt)) # Saving instantaneous control efforts
-            self.logs["norm_inputs"].append(np.abs(control_input/self.accel_max)) # Saving instantaneous normalized inputs
+            self.logs["norm_inputs"].append(list(np.abs(control_input/self.accel_max))) # Saving instantaneous normalized inputs
+            self.logs["drone_position"].append(list(self.initial_state[:3])) # Saving current drone position
             
 
 
-        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}, Computation time: {self.total_time} s, Control effort: {self.control_effort}")
+        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}, Computation time: {self.total_time} s, Control effort: {self.control_effort}, norm inputs: {list(np.abs(control_input/self.accel_max))}")
         
         self.visualize_steps(predicted_steps)
 
