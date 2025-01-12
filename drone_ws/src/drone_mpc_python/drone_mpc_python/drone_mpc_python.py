@@ -33,7 +33,7 @@ class DroneMPCNode(Node):
         self.drone_solver = DroneMPCSolver()
 
         self.declare_parameter('initial_state', [0.0,0.0,0.1125,0.0,0.0,0.0])
-        self.declare_parameter('target_pos', [1.0, 1.0, 1.0, 0.0, 0.0, 0.0])
+        self.declare_parameter('target_pos', [5.0, 5.0, 5.0, 0.0, 0.0, 0.0])
 
         self.declare_parameter('accel_max', 500)
         self.declare_parameter('N_horizon', 50)
