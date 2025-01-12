@@ -90,7 +90,7 @@ class DroneMPCNode(Node):
         self.avoid_pos = None
 
         #Setup solver
-        self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5, repulsion_constant=1.0)
+        self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5, repulsion_constant=self.get_parameter('repulsion_constant').value)
 
         #Publisher
         self.velocity_pub = self.create_publisher(Twist, '/cmd_vel', 10)
@@ -173,7 +173,7 @@ class DroneMPCNode(Node):
 
             del self.drone_solver
             self.drone_solver = DroneMPCSolver()
-            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.6, repulsion_constant=1.0)
+            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.6, repulsion_constant=self.get_parameter('repulsion_constant').value)
             self.hover = False
             
 
@@ -232,7 +232,7 @@ class DroneMPCNode(Node):
             self.get_logger().info("Setting up new solver...")
             del self.drone_solver
             self.drone_solver = DroneMPCSolver()
-            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5, repulsion_constant=1.0)
+            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5, repulsion_constant=self.get_parameter('repulsion_constant').value)
             self.hover = False
             self.new_pos = True
             self.is_reached.data = not self.new_pos
@@ -353,10 +353,13 @@ def main(args=None):
 
     except KeyboardInterrupt:
         # Saving logs for post-processing
-        drone_mpc_node.get_logger().info("Saving logs for post-processing")
+        drone_mpc_node.get_logger().info("=========================================Keyboard Interruption: Saving logs for post-processing========================================================")
         drone_mpc_node.save_logs()
 
     finally:
+        # Saving logs for post-processing
+        drone_mpc_node.get_logger().info("===============================================Finally: Saving logs for post-processing========================================================")
+        drone_mpc_node.save_logs()
         # Destroy the node explicitly
         drone_mpc_node.destroy_node()
         rclpy.shutdown()
