@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from drone_mpc_python.mpcDroneSolver import DroneMPCSolver
 from mpl_toolkits.mplot3d import Axes3D
 import timeit
+import time
 
 class DroneMPCNode(Node):
     #Constructor
@@ -117,6 +118,12 @@ class DroneMPCNode(Node):
         self.total_time = 0
         self.error_tolerance = 0.3 # Error tolerance at the final goal position
         self.control_effort = 0
+        self.start_time_flag = True
+        self.l2_error_list = []
+        self.settling_time_period = 5 # Approximating settling time (in seconds)
+        self.start_time = None
+
+        self.logs = {"control_effort": [], "computation_time": [], "norm_inputs": [], "endpoint_tracking_error": []}
     
     def avoid_pos_callback(self,msg):
         if msg is not None:
@@ -152,14 +159,29 @@ class DroneMPCNode(Node):
     def current_pose_callback(self,msg):
         self.initial_state[:3] = np.array([msg.position.x, msg.position.y, msg.position.z])
         
-        distance  =np.linalg.norm(self.initial_state[:3] - self.target_pos[:3])
+        distance  = np.linalg.norm(self.initial_state[:3] - self.target_pos[:3])
 
         if distance < self.error_tolerance and self.new_pos == True:
             self.get_logger().info("Target Reached")
             
-            self.new_pos = False
-            self.is_reached.data = not self.new_pos
-            self.reached_point_pub.publish(self.is_reached)
+            if self.start_time_flag:
+                self.start_time = time.time()
+                self.start_time_flag = False
+
+            self.l2_error_list.append(distance)
+            self.get_logger().info(f"Computating steady state error... \n Waiting time: {time.time() - self.start_time}")
+
+            # CAUTION CAUTION CAUTION (use the below code when using list of waypoint navigation)
+            # self.new_pos = False
+            # self.is_reached.data = not self.new_pos
+            # self.reached_point_pub.publish(self.is_reached)
+
+            if (time.time() - self.start_time) > self.settling_time_period: # Waiting for 5 seconds (for computing average steady state error (approximate))
+                self.new_pos = False
+                self.is_reached.data = not self.new_pos
+                self.reached_point_pub.publish(self.is_reached) # BEWARE that it publishes delayed
+
+                self.logs["endpoint_tracking_error"].append(np.mean(self.l2_error_list)) # Saving endpoint tracking error (mean of distance error after reaching within error tolerance)
 
             self.total_time = 0 # Reset total time after reaching the final position NOTE: comment it when computing for all waypoints within a run
             self.control_effort = 0 # Reset control effort after reaching the final position NOTE: comment it when computing for all waypoints within a run
@@ -210,6 +232,11 @@ class DroneMPCNode(Node):
             self.total_time += time_taken_each_step # Accumulate MPC computation time
 
             self.control_effort += (np.sum(np.abs(control_input)) * self.dt) # control_effort = integrate abs(control_inputs) dt
+            
+            self.logs["computation_time"].append(time_taken_each_step) # Saving instantaneous computation time of the MPC solver
+            self.logs["control_effort"].append(np.sum(np.abs(control_input)*self.dt)) # Saving instantaneous control efforts
+            self.logs["norm_inputs"].append(np.abs(control_input/self.accel_max)) # Saving instantaneous normalized inputs
+            
 
 
         self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}, Computation time: {self.total_time} s, Control effort: {self.control_effort}")
