@@ -126,7 +126,7 @@ class DroneMPCNode(Node):
         self.start_time = None
         self.inst_velocity = 0
 
-        self.logs = {"control_effort": [], "computation_time": [], "norm_inputs": [], "endpoint_tracking_error": [], "inst_velocity": []}
+        self.logs = {"dt": self.dt,"control_effort": [], "computation_time": [], "norm_inputs": [], "endpoint_tracking_error": [], "drone_position": [], "inst_velocity": []}
 
     def save_logs(self):
         current_time = datetime.now()
@@ -246,7 +246,6 @@ class DroneMPCNode(Node):
             #self.get_logger().info("£££££££££££££££££££££££££££££££££££££££££££Inside the if not self.is_reached$$$$$$$$$$$$$$$$$$$$$$$$$")
             time_taken_each_step = stop - start # Compute MPC computation time for each step
             self.total_time += time_taken_each_step # Accumulate MPC computation time
-
             self.control_effort += (np.sum(np.abs(control_input)) * self.dt) # control_effort = integrate abs(control_inputs) dt
 
             #self.get_logger().info("££££££££££££££££££££££££££££££££££TEST££££££££££££££££££££££££££££££££££££££££")
@@ -257,11 +256,12 @@ class DroneMPCNode(Node):
             self.logs["computation_time"].append(time_taken_each_step) # Saving instantaneous computation time of the MPC solver
             self.logs["control_effort"].append(np.sum(np.abs(control_input)*self.dt)) # Saving instantaneous control efforts
             self.logs["norm_inputs"].append(np.abs(control_input/self.accel_max)) # Saving instantaneous normalized inputs
-            self.logs["inst_velocity"].append(self.inst_velocity)
+            self.logs["inst_velocity"].append(self.inst_velocity) # Saving Instantaneous Velocity
+            self.logs["norm_inputs"].append(list(np.abs(control_input/self.accel_max))) # Saving instantaneous normalized inputs
+            self.logs["drone_position"].append(list(self.initial_state[:3])) # Saving current drone position
             
+            self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}, Computation time: {self.total_time} s, Control effort: {self.control_effort}, norm inputs: {list(np.abs(control_input/self.accel_max))}, Instantaneous Velocity: {self.inst_velocity}")
 
-
-        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}, Computation time: {self.total_time} s, Control effort: {self.control_effort}, Instantaneous Velocity: {self.inst_velocity}")
         
         self.visualize_steps(predicted_steps)
 
