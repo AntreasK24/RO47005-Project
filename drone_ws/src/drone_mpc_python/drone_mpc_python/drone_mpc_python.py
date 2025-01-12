@@ -22,7 +22,7 @@ class DroneMPCNode(Node):
         super().__init__('drone_mpc')
 
         #Wait for the environment to initialize
-        time.sleep(20)
+        # time.sleep(20)
 
         self.hover = False
         self.positions = []
@@ -54,7 +54,7 @@ class DroneMPCNode(Node):
 
         self.declare_parameter('visualization',True)
 
-        self.declare_parameter('repulsion_constant',1)
+        self.declare_parameter('repulsion_constant',1.0)
 
 
         
@@ -90,7 +90,7 @@ class DroneMPCNode(Node):
         self.avoid_pos = None
 
         #Setup solver
-        self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5)
+        self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5, repulsion_constant=1.0)
 
         #Publisher
         self.velocity_pub = self.create_publisher(Twist, '/cmd_vel', 10)
@@ -109,18 +109,18 @@ class DroneMPCNode(Node):
         self.timer = self.create_timer(self.dt, self.timer_callback)
 
         #Set up real-time 3D plot
-        if self.get_parameter('visualization').value:
-            plt.ion()  # Turn on interactive mode   
-            self.fig = plt.figure()
-            self.ax = self.fig.add_subplot(111, projection='3d')  
-            self.plot_x, self.plot_y, self.plot_z = [], [], []  
-            self.scatter = self.ax.scatter([], [], [])
-            self.ax.set_xlim(-10, 10)  
-            self.ax.set_ylim(-10, 10)
-            self.ax.set_zlim(0, 5) 
-            self.ax.set_xlabel("X Position")
-            self.ax.set_ylabel("Y Position")
-            self.ax.set_zlabel("Z Position")
+        # if self.get_parameter('visualization').value:
+        #     plt.ion()  # Turn on interactive mode   
+        #     self.fig = plt.figure()
+        #     self.ax = self.fig.add_subplot(111, projection='3d')  
+        #     self.plot_x, self.plot_y, self.plot_z = [], [], []  
+        #     self.scatter = self.ax.scatter([], [], [])
+        #     self.ax.set_xlim(-10, 10)  
+        #     self.ax.set_ylim(-10, 10)
+        #     self.ax.set_zlim(0, 5) 
+        #     self.ax.set_xlabel("X Position")
+        #     self.ax.set_ylabel("Y Position")
+        #     self.ax.set_zlabel("Z Position")
 
         self.is_reached = Bool()
         self.is_reached.data = False
@@ -173,7 +173,7 @@ class DroneMPCNode(Node):
 
             del self.drone_solver
             self.drone_solver = DroneMPCSolver()
-            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.6)
+            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.6, repulsion_constant=1.0)
             self.hover = False
             
 
@@ -232,7 +232,7 @@ class DroneMPCNode(Node):
             self.get_logger().info("Setting up new solver...")
             del self.drone_solver
             self.drone_solver = DroneMPCSolver()
-            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5)
+            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5, repulsion_constant=1.0)
             self.hover = False
             self.new_pos = True
             self.is_reached.data = not self.new_pos
@@ -291,40 +291,40 @@ class DroneMPCNode(Node):
         self.initial_state[3:] = control_input * self.dt
 
         # Store the new position for plotting
-        self.positions.append(self.initial_state[0:3].copy())
-        if self.get_parameter('visualization').value:
-            # Update the 3D plot
-            #self.ax.clear()
-            self.ax.set_xlim(-10, 10)
-            self.ax.set_ylim(-10, 10)
-            self.ax.set_zlim(0, 10)
-            self.ax.set_xlabel("X Position")
-            self.ax.set_ylabel("Y Position")
-            self.ax.set_zlabel("Z Position")
+        # self.positions.append(self.initial_state[0:3].copy())
+        # if self.get_parameter('visualization').value:
+        #     # Update the 3D plot
+        #     #self.ax.clear()
+        #     self.ax.set_xlim(-10, 10)
+        #     self.ax.set_ylim(-10, 10)
+        #     self.ax.set_zlim(0, 10)
+        #     self.ax.set_xlabel("X Position")
+        #     self.ax.set_ylabel("Y Position")
+        #     self.ax.set_zlabel("Z Position")
 
-            # Plot the trajectory as a line
-            # Update the 3D plot
-            self.ax.cla()  
-            self.ax.set_xlim(-10, 10)
-            self.ax.set_ylim(-10, 10)
-            self.ax.set_zlim(0, 10)
-            self.ax.set_xlabel("X Position")
-            self.ax.set_ylabel("Y Position")
-            self.ax.set_zlabel("Z Position")
+        #     # Plot the trajectory as a line
+        #     # Update the 3D plot
+        #     self.ax.cla()  
+        #     self.ax.set_xlim(-10, 10)
+        #     self.ax.set_ylim(-10, 10)
+        #     self.ax.set_zlim(0, 10)
+        #     self.ax.set_xlabel("X Position")
+        #     self.ax.set_ylabel("Y Position")
+        #     self.ax.set_zlabel("Z Position")
 
-            # Plot the trajectory as a line
-            x_vals = [pos[0] for pos in self.positions]
-            y_vals = [pos[1] for pos in self.positions]
-            z_vals = [pos[2] for pos in self.positions]
-            self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
+        #     # Plot the trajectory as a line
+        #     x_vals = [pos[0] for pos in self.positions]
+        #     y_vals = [pos[1] for pos in self.positions]
+        #     z_vals = [pos[2] for pos in self.positions]
+        #     self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
 
-            if self.avoid_pos is not None:
-                for pos in self.avoid_pos:
-                    self.ax.scatter(pos[0], pos[1], pos[2], c='r', marker='x')
+        #     if self.avoid_pos is not None:
+        #         for pos in self.avoid_pos:
+        #             self.ax.scatter(pos[0], pos[1], pos[2], c='r', marker='x')
 
-            # Redraw the plot and pause briefly
-            plt.draw()
-            plt.pause(0.1)
+        #     # Redraw the plot and pause briefly
+        #     plt.draw()
+        #     plt.pause(0.1)
 
 
 
