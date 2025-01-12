@@ -124,8 +124,9 @@ class DroneMPCNode(Node):
         self.l2_error_list = []
         self.settling_time_period = 5 # Approximating settling time (in seconds)
         self.start_time = None
+        self.inst_velocity = 0
 
-        self.logs = {"control_effort": [], "computation_time": [], "norm_inputs": [], "endpoint_tracking_error": []}
+        self.logs = {"control_effort": [], "computation_time": [], "norm_inputs": [], "endpoint_tracking_error": [], "inst_velocity": []}
 
     def save_logs(self):
         current_time = datetime.now()
@@ -179,7 +180,7 @@ class DroneMPCNode(Node):
                 self.start_time = time.time()
                 self.start_time_flag = False
 
-            self.l2_error_list.append(distance)
+            self.l2_error_list.append(2)
             self.get_logger().info(f"Computating steady state error... \n Waiting time: {time.time() - self.start_time}")
 
             # CAUTION CAUTION CAUTION (use the below code when using list of waypoint navigation)
@@ -196,6 +197,7 @@ class DroneMPCNode(Node):
 
             self.total_time = 0 # Reset total time after reaching the final position NOTE: comment it when computing for all waypoints within a run
             self.control_effort = 0 # Reset control effort after reaching the final position NOTE: comment it when computing for all waypoints within a run
+            self.inst_velocity = 0
             
 
     def target_position_callback(self,msg):
@@ -238,19 +240,28 @@ class DroneMPCNode(Node):
 
         stop = timeit.default_timer()
 
+        self.get_logger().info(f"Target position: Is Reached:',{self.is_reached.data}")
+
         if not self.is_reached.data: # Compute until reaching the final position
+            #self.get_logger().info("£££££££££££££££££££££££££££££££££££££££££££Inside the if not self.is_reached$$$$$$$$$$$$$$$$$$$$$$$$$")
             time_taken_each_step = stop - start # Compute MPC computation time for each step
             self.total_time += time_taken_each_step # Accumulate MPC computation time
 
             self.control_effort += (np.sum(np.abs(control_input)) * self.dt) # control_effort = integrate abs(control_inputs) dt
+
+            #self.get_logger().info("££££££££££££££££££££££££££££££££££TEST££££££££££££££££££££££££££££££££££££££££")
+            #self.get_logger().info(f"££££££££££££££££$$$$$$$$$$$$$$$$$currently at, {self.initial_state[:3]}")
+            self.get_logger().info(f"$$$$$$$$$$$$$$$$£££££££££££££££££predicted steps::, {predicted_steps}")
+            self.inst_velocity =  (np.linalg.norm(predicted_steps[1][:3] - predicted_steps[0][:3]))/self.dt
             
             self.logs["computation_time"].append(time_taken_each_step) # Saving instantaneous computation time of the MPC solver
             self.logs["control_effort"].append(np.sum(np.abs(control_input)*self.dt)) # Saving instantaneous control efforts
             self.logs["norm_inputs"].append(np.abs(control_input/self.accel_max)) # Saving instantaneous normalized inputs
+            self.logs["inst_velocity"].append(self.inst_velocity)
             
 
 
-        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}, Computation time: {self.total_time} s, Control effort: {self.control_effort}")
+        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}, Computation time: {self.total_time} s, Control effort: {self.control_effort}, Instantaneous Velocity: {self.inst_velocity}")
         
         self.visualize_steps(predicted_steps)
 
