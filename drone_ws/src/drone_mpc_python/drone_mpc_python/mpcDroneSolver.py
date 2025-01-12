@@ -16,7 +16,7 @@ class DroneMPCSolver:
         self.ocp_solver = None
         self.drone_radius = drone_radius
 
-    def setup_solver(self,init_pos,target_pos,avoid_pos,d_min):
+    def setup_solver(self,init_pos,target_pos,avoid_pos,d_min,repulsion_constant):
         # Create OCP object
         ocp = AcadosOcp()
         self.init_pos = init_pos
@@ -97,7 +97,7 @@ class DroneMPCSolver:
                 switch = ca.if_else(dist_expr < total_radius ** 2, 0, 1)
                 
                 # Repulsion term that activates when within the threshold
-                repulsion_term += switch * 0.5 * 1 * ca.power((1 / distance_to_obstacle) - (1 / position_threshold), 2)
+                repulsion_term += switch * 0.5 * repulsion_constant * ca.power((1 / distance_to_obstacle) - (1 / position_threshold), 2)
 
             # Add repulsion term to the cost expression
             ocp.model.cost_y_expr = ca.vertcat(ocp.model.cost_y_expr, repulsion_term)
