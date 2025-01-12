@@ -1,7 +1,9 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Pose, Point
-from drone_msgs.msg import SphereArray  # Import the SphereArray message type
+from drone_msgs.msg import SphereArray
+from datetime import datetime
+import json  # To handle saving logs as JSON
 
 class ClosestSphereDistance(Node):
     def __init__(self):
@@ -36,17 +38,25 @@ class ClosestSphereDistance(Node):
             10
         )
 
+        self.logs = {"closest_distances": []}
+
     def save_logs(self):
         current_time = datetime.now()
         unique_name = current_time.strftime("%Y%m%d_%H%M%S")
-        filename = "logs_closest_spheres"+unique_name+".json"
+        filename = "logs_closest_spheres_" + unique_name + ".json"
+
+        # Save the logs to a file
+        with open(filename, 'w') as file:
+            json.dump(self.logs, file, indent=4)
+
+        self.get_logger().info(f"Logs saved to {filename}")
 
     def pose_callback(self, msg):
         # Update the drone's position from the /pose topic
         self.drone_position.x = msg.position.x
         self.drone_position.y = msg.position.y
         self.drone_position.z = msg.position.z
-        self.get_logger().info(f'Updated drone position: ({self.drone_position.x}, {self.drone_position.y}, {self.drone_position.z})')
+        #self.get_logger().info(f'Updated drone position: ({self.drone_position.x}, {self.drone_position.y}, {self.drone_position.z})')
 
     def sphere_callback(self, msg):
         # Update the sphere data
@@ -79,6 +89,7 @@ class ClosestSphereDistance(Node):
 
         # Append the closest distance to the list
         self.closest_distances.append(closest_distance)
+        self.logs["closest_distances"].append(closest_distance)
         
         # Log the closest distance and the list
         self.get_logger().info(f'Closest distance to a sphere: {closest_distance}')
@@ -90,9 +101,10 @@ def main(args=None):
         rclpy.init(args=args)
         node = ClosestSphereDistance()
         rclpy.spin(node)
-    except:
-        node.get_logger().info("Saving logs for post-processing")
-        node.save_logs()
+        
+    except KeyboardInterrupt:
+        node.get_logger().info("KeyboardInterrupt detected. Saving logs...")
+        node.save_logs()  # Save logs when program is interrupted
 
     finally:
         node.destroy_node()

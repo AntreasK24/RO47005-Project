@@ -1,7 +1,9 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Pose, Point
-from drone_msgs.msg import SphereArray  # Import the SphereArray message type
+from drone_msgs.msg import SphereArray
+from datetime import datetime
+import json
 
 class AverageVisibility(Node):
     def __init__(self):
@@ -36,11 +38,18 @@ class AverageVisibility(Node):
         self.timer_period = 1.0  # Timer interval in seconds
         self.timer = self.create_timer(self.timer_period, self.calculate_average_visibility)
 
+        # Logs dictionary
+        self.logs = {"average_visibility_distances": []}
+
     def save_logs(self):
+        # Save the logs to a file with timestamp
         current_time = datetime.now()
         unique_name = current_time.strftime("%Y%m%d_%H%M%S")
-        filename = "logs_average_visibility"+unique_name+".json"
+        filename = f"logs_average_visibility_{unique_name}.json"
 
+        with open(filename, 'w') as f:
+            json.dump(self.logs, f, indent=4)
+        self.get_logger().info(f'Logs saved to {filename}')
 
     def pose_callback(self, msg):
         # Update the drone's position from the /pose topic
@@ -87,24 +96,24 @@ class AverageVisibility(Node):
         if sphere_count > 0:
             average_visibility = total_distance / sphere_count
             self.average_visibility_distances.append(average_visibility)
-            self.get_logger().info(f'Average visibility (distance to obstacles): {self.average_visibility_distances}')
+            self.logs["average_visibility_distances"].append(average_visibility)
+            self.get_logger().info(f'Average visibility (distance to obstacles): {average_visibility}')
         else:
             self.get_logger().info('No spheres in range to calculate visibility.')
 
 def main(args=None):
-
     try:
         rclpy.init(args=args)
         node = AverageVisibility()
         rclpy.spin(node)
-    except:
+        
+    except KeyboardInterrupt:
         node.get_logger().info("Saving logs for post-processing")
         node.save_logs()
 
     finally:
         node.destroy_node()
         rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()
