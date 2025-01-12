@@ -106,7 +106,7 @@ class TrajectoryPublisher(Node):
     def avoid_pos_callback(self,msg):
         self.obstacles = []
         for sphere in msg.spheres:
-            center = (sphere.center.x, sphere.center.y, sphere.center.z)
+            center = (sphere.position.x, sphere.position.y, sphere.position.z)
             radius = sphere.radius
             self.obstacles.append((center, radius))
     
