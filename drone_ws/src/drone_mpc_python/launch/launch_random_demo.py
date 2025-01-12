@@ -5,7 +5,7 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument('repulsion_constant', default_value='1.0', description='The repulsion constant for the drone'),
+        DeclareLaunchArgument('repulsion_constant', default_value='4.0', description='The repulsion constant for the drone'),
         Node(
             package='drone_mpc_python',
             executable='drone_mpc_python',

@@ -7,7 +7,7 @@ def generate_launch_description():
     return LaunchDescription([
 #        DeclareLaunchArgument('cylinder_centers', default_value='[(5,5),(10,10)]'),
 #        DeclareLaunchArgument('cylinder_radii', default_value='[2,3]'),
-DeclareLaunchArgument('repulsion_constant', default_value='10.0', description='The repulsion constant for the drone'),
+DeclareLaunchArgument('repulsion_constant', default_value='1.0', description='The repulsion constant for the drone'),
 
         Node(
             package='global_planner',
@@ -30,5 +30,11 @@ DeclareLaunchArgument('repulsion_constant', default_value='10.0', description='T
             executable='drone_mpc_python',
             name='drone_mpc',
             parameters=[{'repulsion_constant': LaunchConfiguration('repulsion_constant')}],
-        )
+        ),
+
+        Node(
+            package='trajectory_generator',
+            executable='trajectory_publisher',
+            name='trajectory_generator'
+        ),
     ])

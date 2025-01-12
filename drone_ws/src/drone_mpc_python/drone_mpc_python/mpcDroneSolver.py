@@ -141,6 +141,6 @@ class DroneMPCSolver:
 
         self.ocp_solver.solve_for_x0(x0_bar=init_pos)
         first_control_input = self.ocp_solver.get(0,"u")
-        predicted_states = [self.ocp_solver.get(i, "x") for i in range(0,200, 20)]
+        predicted_states = [self.ocp_solver.get(i, "x") for i in range(0,self.N_horizon, 20)]
 
         return first_control_input, predicted_states
