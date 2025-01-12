@@ -3,6 +3,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Pose, Twist, Point,PoseArray
 from std_msgs.msg import Float64MultiArray,Bool
 import drone_msgs.msg
+import time
 
 import numpy as np
 import transforms3d
@@ -19,6 +20,9 @@ class DroneMPCNode(Node):
     #Constructor
     def __init__(self):
         super().__init__('drone_mpc')
+
+        #Wait for the environment to initialize
+        time.sleep(20)
 
         self.hover = False
         self.positions = []
@@ -47,6 +51,10 @@ class DroneMPCNode(Node):
         self.declare_parameter('noise', False)
         self.declare_parameter('noise_std_pos', 0.1)
         self.declare_parameter('noise_std_vel', 0.1)
+
+        self.declare_parameter('visualization',True)
+
+        self.declare_parameter('repulsion_constant',1)
 
 
         
@@ -101,17 +109,18 @@ class DroneMPCNode(Node):
         self.timer = self.create_timer(self.dt, self.timer_callback)
 
         #Set up real-time 3D plot
-        plt.ion()  # Turn on interactive mode   
-        self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(111, projection='3d')  
-        self.plot_x, self.plot_y, self.plot_z = [], [], []  
-        self.scatter = self.ax.scatter([], [], [])
-        self.ax.set_xlim(-10, 10)  
-        self.ax.set_ylim(-10, 10)
-        self.ax.set_zlim(0, 5) 
-        self.ax.set_xlabel("X Position")
-        self.ax.set_ylabel("Y Position")
-        self.ax.set_zlabel("Z Position")
+        if self.get_parameter('visualization').value:
+            plt.ion()  # Turn on interactive mode   
+            self.fig = plt.figure()
+            self.ax = self.fig.add_subplot(111, projection='3d')  
+            self.plot_x, self.plot_y, self.plot_z = [], [], []  
+            self.scatter = self.ax.scatter([], [], [])
+            self.ax.set_xlim(-10, 10)  
+            self.ax.set_ylim(-10, 10)
+            self.ax.set_zlim(0, 5) 
+            self.ax.set_xlabel("X Position")
+            self.ax.set_ylabel("Y Position")
+            self.ax.set_zlabel("Z Position")
 
         self.is_reached = Bool()
         self.is_reached.data = False
@@ -283,43 +292,41 @@ class DroneMPCNode(Node):
 
         # Store the new position for plotting
         self.positions.append(self.initial_state[0:3].copy())
+        if self.get_parameter('visualization').value:
+            # Update the 3D plot
+            #self.ax.clear()
+            self.ax.set_xlim(-10, 10)
+            self.ax.set_ylim(-10, 10)
+            self.ax.set_zlim(0, 10)
+            self.ax.set_xlabel("X Position")
+            self.ax.set_ylabel("Y Position")
+            self.ax.set_zlabel("Z Position")
 
-        # # Update the 3D plot
-        # #self.ax.clear()
-        # self.ax.set_xlim(-10, 10)
-        # self.ax.set_ylim(-10, 10)
-        # self.ax.set_zlim(0, 10)
-        # self.ax.set_xlabel("X Position")
-        # self.ax.set_ylabel("Y Position")
-        # self.ax.set_zlabel("Z Position")
+            # Plot the trajectory as a line
+            # Update the 3D plot
+            self.ax.cla()  
+            self.ax.set_xlim(-10, 10)
+            self.ax.set_ylim(-10, 10)
+            self.ax.set_zlim(0, 10)
+            self.ax.set_xlabel("X Position")
+            self.ax.set_ylabel("Y Position")
+            self.ax.set_zlabel("Z Position")
 
-        # # Plot the trajectory as a line
-        # # Update the 3D plot
-        # self.ax.cla()  
-        # self.ax.set_xlim(-10, 10)
-        # self.ax.set_ylim(-10, 10)
-        # self.ax.set_zlim(0, 10)
-        # self.ax.set_xlabel("X Position")
-        # self.ax.set_ylabel("Y Position")
-        # self.ax.set_zlabel("Z Position")
+            # Plot the trajectory as a line
+            x_vals = [pos[0] for pos in self.positions]
+            y_vals = [pos[1] for pos in self.positions]
+            z_vals = [pos[2] for pos in self.positions]
+            self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
 
-        # # Plot the trajectory as a line
-        # x_vals = [pos[0] for pos in self.positions]
-        # y_vals = [pos[1] for pos in self.positions]
-        # z_vals = [pos[2] for pos in self.positions]
-        # self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
+            if self.avoid_pos is not None:
+                for pos in self.avoid_pos:
+                    self.ax.scatter(pos[0], pos[1], pos[2], c='r', marker='x')
 
-        # if self.avoid_pos is not None:
-        #     for pos in self.avoid_pos:
-        #         self.ax.scatter(pos[0], pos[1], pos[2], c='r', marker='x')
+            # Redraw the plot and pause briefly
+            plt.draw()
+            plt.pause(0.1)
 
-        # # Redraw the plot and pause briefly
-        # plt.draw()
-        # plt.pause(0.1)
 
-        # #Redraw the plot and pause briefly
-        # plt.draw()
-        # plt.pause(0.1)
 
     def visualize_steps(self, steps):
         # steps are a list of states
