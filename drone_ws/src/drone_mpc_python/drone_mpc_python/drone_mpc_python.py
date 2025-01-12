@@ -252,7 +252,6 @@ class DroneMPCNode(Node):
             
             self.logs["computation_time"].append(time_taken_each_step) # Saving instantaneous computation time of the MPC solver
             self.logs["control_effort"].append(np.sum(np.abs(control_input)*self.dt)) # Saving instantaneous control efforts
-            self.logs["norm_inputs"].append(np.abs(control_input/self.accel_max)) # Saving instantaneous normalized inputs
             self.logs["inst_velocity"].append(self.inst_velocity) # Saving Instantaneous Velocity
             self.logs["norm_inputs"].append(list(np.abs(control_input/self.accel_max))) # Saving instantaneous normalized inputs
             self.logs["drone_position"].append(list(self.initial_state[:3])) # Saving current drone position
