@@ -58,6 +58,7 @@ def export_drone_ode_model(is_state_noise=False, is_input_noise=False) -> Acados
 
     # Define the state-space model as: x_dot = A * x + B * u
     f_expl = A @ x + B @ u
+    f_expl[5] = f_expl[5] - m*9.81
 
 
     # Implicit dynamics (state derivative equals the dynamics)

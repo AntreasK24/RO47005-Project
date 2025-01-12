@@ -137,7 +137,7 @@ class TrajectoryPublisher(Node):
                 x, y, z = zigzag_trajectory(self.t)
                 self.t += 0.1
             elif self.trajectory_type == "Random":
-                x, y, z = random_trajectory(lower_limit=1, upper_limit=7,obstacles=self.obstacles)
+                x, y, z = random_trajectory(lower_limit=1, upper_limit=5,obstacles=self.obstacles)
                 self.t += 0.1
 
 

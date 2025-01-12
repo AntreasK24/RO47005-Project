@@ -39,7 +39,7 @@ class DroneMPCSolver:
         ocp.cost.W_e = self.Q
 
         # Define the reference (desired) target in the cost
-        target_state = np.array(target_pos) #np.array([target_pos[0], target_pos[1], target_pos[2], 0.0, 0.0, 0.0])
+        target_state = np.array(target_pos)
         ocp.model.cost_y_expr = ca.vertcat(ocp.model.x - target_state, ocp.model.u)
         ocp.model.cost_y_expr_e = ocp.model.x - target_state
         ocp.cost.yref  = np.zeros((ny, ))

@@ -29,13 +29,12 @@ class DroneMPCNode(Node):
         self.Q =  self.Q.flatten().tolist()
         self.R =  self.R.flatten().tolist()
 
-        #Create MPC solver object
-        self.drone_solver = DroneMPCSolver()
+
 
         self.declare_parameter('initial_state', [0.0,0.0,0.1125,0.0,0.0,0.0])
         self.declare_parameter('target_pos', [0.0, 0.0, 1.0, 0.0, 0.0, 0.0])
 
-        self.declare_parameter('accel_max', 500)
+        self.declare_parameter('accel_max', 5)
         self.declare_parameter('N_horizon', 50)
         self.declare_parameter('prediction_period', 0.05)
         self.declare_parameter('Q',self.Q)
@@ -48,15 +47,14 @@ class DroneMPCNode(Node):
         self.declare_parameter('noise_std_pos', 0.1)
         self.declare_parameter('noise_std_vel', 0.1)
 
-        self.declare_parameter('visualization',True)
+        self.declare_parameter('visualization',False)
 
-        self.declare_parameter('repulsion_constant',1)
+        self.declare_parameter('repulsion_constant',1.0)
 
 
         
 
         self.noise = self.get_parameter('noise').value
-        self.noise_std_pos = self.get_parameter('noise_std_pos').value
         self.noise_std_vel = self.get_parameter('noise_std_vel').value
 
         self.Q = self.get_parameter('Q').value
@@ -85,8 +83,12 @@ class DroneMPCNode(Node):
 
         self.avoid_pos = None
 
+        #Create MPC solver object
+        self.drone_solver = DroneMPCSolver(accel_max=self.get_parameter('accel_max').value,N_horizon=self.get_parameter('N_horizon').value,prediction_period=self.get_parameter('prediction_period').value,Q=self.Q,R=self.R,drone_radius=self.drone_radius)
+
         #Setup solver
-        self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5)
+        self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5,repulsion_constant=self.get_parameter('repulsion_constant').value
+)
 
         #Publisher
         self.velocity_pub = self.create_publisher(Twist, '/cmd_vel', 10)
@@ -146,7 +148,7 @@ class DroneMPCNode(Node):
 
             del self.drone_solver
             self.drone_solver = DroneMPCSolver()
-            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.6)
+            self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5,repulsion_constant=self.get_parameter('repulsion_constant').value)
             self.hover = False
             
 
@@ -187,7 +189,7 @@ class DroneMPCNode(Node):
             self.get_logger().info("Setting up new solver...")
             del self.drone_solver
             self.drone_solver = DroneMPCSolver()
-            self.drone_solver.setup_solver(init_pos=self.initial_state, target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5)
+            self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5,repulsion_constant=self.get_parameter('repulsion_constant').value)
             self.hover = False
             self.new_pos = True
 

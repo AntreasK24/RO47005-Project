@@ -29,8 +29,8 @@ class DroneSimulator(Node):
         timer_period = 1.0/240.0
         self.timer = self.create_timer(timer_period,self.timer_callback)
 
-        self.num_points = 20       # Number of points
-        self.num_dimensions = 3     # Dimensions for each point (e.g., 3D)
+        self.num_points = 20       
+        self.num_dimensions = 3    
 
         self.velocity_subscriber
         self.env = VelocityAviary(drone_model=DroneModel.CF2X, num_drones=1, physics=Physics.PYB, ctrl_freq=240, gui=True)
@@ -70,30 +70,6 @@ class DroneSimulator(Node):
 
         for pos in positions_array:
             self.create_obstacles(shape="sphere",position=pos,scale=(0.5,0.5,0.5),color=(0,0.7,0.5,1))
-
-
-    # def point_reached_callback(self, msg):
-    #     if msg.data:
-    #         new_position = np.random.uniform(low=1, high=5, size=(3,))
-    #         self.create_obstacles(shape="sphere", position=new_position, scale=(0.5, 0.5, 0.5), color=(0,0.7,0.5,1))
-
-    #         sphere_array_msg = drone_msgs.msg.SphereArray()
-    #         sphere = drone_msgs.msg.Sphere()
-    #         for _ in range(5):
-    #             new_position = np.random.uniform(low=1, high=5, size=(3,))
-    #             sphere = drone_msgs.msg.Sphere()
-    #             sphere.position.x = new_position[0]
-    #             sphere.position.y = new_position[1]
-    #             sphere.position.z = new_position[2]
-    #             sphere.radius = 0.5
-    #             sphere_array_msg.spheres.append(sphere)
-    #         sphere.position.x = new_position[0]
-    #         sphere.position.y = new_position[1]
-    #         sphere.position.z = new_position[2]
-    #         sphere.radius = 0.5
-    #         sphere_array_msg.spheres.append(sphere)
-    #         self.obstacles_publisher.publish(sphere_array_msg)
-
 
     
 
