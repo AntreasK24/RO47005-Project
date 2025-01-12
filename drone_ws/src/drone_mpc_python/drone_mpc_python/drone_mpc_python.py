@@ -112,10 +112,11 @@ class DroneMPCNode(Node):
 
         self.is_reached = Bool()
         self.is_reached.data = False
+
+        # Declaring variables for evaluation metrics
         self.total_time = 0
         self.error_tolerance = 0.3 # Error tolerance at the final goal position
-        
-
+        self.control_effort = 0
     
     def avoid_pos_callback(self,msg):
         if msg is not None:
@@ -159,7 +160,9 @@ class DroneMPCNode(Node):
             self.new_pos = False
             self.is_reached.data = not self.new_pos
             self.reached_point_pub.publish(self.is_reached)
+
             self.total_time = 0 # Reset total time after reaching the final position NOTE: comment it when computing for all waypoints within a run
+            self.control_effort = 0 # Reset control effort after reaching the final position NOTE: comment it when computing for all waypoints within a run
             
 
     def target_position_callback(self,msg):
@@ -206,7 +209,11 @@ class DroneMPCNode(Node):
             time_taken_each_step = stop - start # Compute MPC computation time for each step
             self.total_time += time_taken_each_step # Accumulate MPC computation time
 
-        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}, Total time: {self.total_time} s")
+            self.control_effort += (np.sum(np.abs(control_input)) * self.dt) # control_effort = integrate abs(control_inputs) dt
+
+
+        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}, Computation time: {self.total_time} s, Control effort: {self.control_effort}")
+        
         self.visualize_steps(predicted_steps)
 
         if self.noise:
