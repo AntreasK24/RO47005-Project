@@ -243,14 +243,11 @@ class DroneMPCNode(Node):
         self.get_logger().info(f"Target position: Is Reached:',{self.is_reached.data}")
 
         if not self.is_reached.data: # Compute until reaching the final position
-            #self.get_logger().info("£££££££££££££££££££££££££££££££££££££££££££Inside the if not self.is_reached$$$$$$$$$$$$$$$$$$$$$$$$$")
+
             time_taken_each_step = stop - start # Compute MPC computation time for each step
             self.total_time += time_taken_each_step # Accumulate MPC computation time
             self.control_effort += (np.sum(np.abs(control_input)) * self.dt) # control_effort = integrate abs(control_inputs) dt
 
-            #self.get_logger().info("££££££££££££££££££££££££££££££££££TEST££££££££££££££££££££££££££££££££££££££££")
-            #self.get_logger().info(f"££££££££££££££££$$$$$$$$$$$$$$$$$currently at, {self.initial_state[:3]}")
-            self.get_logger().info(f"$$$$$$$$$$$$$$$$£££££££££££££££££predicted steps::, {predicted_steps}")
             self.inst_velocity =  (np.linalg.norm(predicted_steps[1][:3] - predicted_steps[0][:3]))/self.dt
             
             self.logs["computation_time"].append(time_taken_each_step) # Saving instantaneous computation time of the MPC solver
