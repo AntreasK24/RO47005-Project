@@ -15,7 +15,7 @@ def check_distance(point,obstacle):
     if obstacle is not None:
         center, radius = obstacle
         distance = np.linalg.norm(point - center)
-        return (distance +0.5)<= radius
+        return (distance)<= radius + 0.4 # safety distance from obstacles
     
     
 
@@ -81,7 +81,7 @@ def random_trajectory(upper_limit,lower_limit,obstacles):
 
     while True:
         x, y = np.random.uniform(lower_limit, upper_limit, size=2)
-        z = np.random.uniform(lower_limit, 4, size=1)[0]
+        z = np.random.uniform(lower_limit, 3.9, size=1)[0]
         point = np.array([x, y, z])
 
         if z < lower_limit or z > 4:

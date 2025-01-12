@@ -16,7 +16,7 @@ class DroneMPCSolver:
         self.ocp_solver = None
         self.drone_radius = drone_radius
 
-    def setup_solver(self,init_pos,target_pos,avoid_pos,d_min):
+    def setup_solver(self,init_pos,target_pos,avoid_pos,d_min,repulsion_constant):
         # Create OCP object
         ocp = AcadosOcp()
         self.init_pos = init_pos
@@ -39,7 +39,7 @@ class DroneMPCSolver:
         ocp.cost.W_e = self.Q
 
         # Define the reference (desired) target in the cost
-        target_state = np.array(target_pos) #np.array([target_pos[0], target_pos[1], target_pos[2], 0.0, 0.0, 0.0])
+        target_state = np.array(target_pos)
         ocp.model.cost_y_expr = ca.vertcat(ocp.model.x - target_state, ocp.model.u)
         ocp.model.cost_y_expr_e = ocp.model.x - target_state
         ocp.cost.yref  = np.zeros((ny, ))
@@ -99,6 +99,7 @@ class DroneMPCSolver:
                 switch = ca.if_else(dist_expr < total_radius ** 2, 0, 1)
                 
                 # Repulsion term that activates when within the threshold
+<<<<<<< HEAD
                 repulsion_term += switch * 0.5 * 1 * ca.power((1 / distance_to_obstacle) - (1 / position_threshold), 2)
                 
                 ### Try to implement only the maximum repulsion instead of total one:
@@ -107,6 +108,9 @@ class DroneMPCSolver:
 
             ### Try to implement only the maximum repulsion instead of total one:
             #repulsion_term += ca.if_else(len(repulsion_terms) > 0, ca.mmax(ca.vertcat(*repulsion_terms)), 0)
+=======
+                repulsion_term += switch * 0.5 * repulsion_constant * ca.power((1 / distance_to_obstacle) - (1 / position_threshold), 2)
+>>>>>>> 5070deea4e8eb62b159f98c0a6469cc8eec9289d
 
             # Add repulsion term to the cost expression
             ocp.model.cost_y_expr = ca.vertcat(ocp.model.cost_y_expr, repulsion_term)
@@ -150,6 +154,6 @@ class DroneMPCSolver:
 
         self.ocp_solver.solve_for_x0(x0_bar=init_pos)
         first_control_input = self.ocp_solver.get(0,"u")
-        predicted_states = [self.ocp_solver.get(i, "x") for i in range(0,200, 20)]
+        predicted_states = [self.ocp_solver.get(i, "x") for i in range(0,self.N_horizon, 20)]
 
         return first_control_input, predicted_states

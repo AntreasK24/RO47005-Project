@@ -17,7 +17,8 @@ class ConstraintNode(Node):
             drone_msgs.msg.SphereArray,
             '/spheres',
             3)
-        
+        self.max_render_height = 4.0
+
     def quaternion_to_rotation_matrix(self,q):
         x, y, z, w = q
         return np.array([
@@ -53,7 +54,8 @@ class ConstraintNode(Node):
             sphere.position.y = sphere_position[1,0]
             sphere.position.z = sphere_position[2,0]
             sphere.radius = r_sphere + 0.1
-            spheres.append(sphere)
+            if sphere.position.z <= self.max_render_height:
+                spheres.append(sphere)
             
             # Check if enough spheres are created or if another has to be put at the end
             if i == num_spheres - 1:
@@ -67,7 +69,8 @@ class ConstraintNode(Node):
                     sphere.position.y = sphere_position[1,0]
                     sphere.position.z = sphere_position[2,0]
                     sphere.radius = r_sphere + 0.1
-                    spheres.append(sphere)
+                    if sphere.position.z <= self.max_render_height:
+                        spheres.append(sphere)
 
         return spheres
 
@@ -134,7 +137,8 @@ class ConstraintNode(Node):
         sphere.position.y = pose.position.y
         sphere.position.z = pose.position.z
         sphere.radius = r_sphere
-        spheres.append(sphere)
+        if sphere.position.z <= self.max_render_height:
+            spheres.append(sphere)
         # calculate the desired positions and radius of the spheres
         
         return spheres
