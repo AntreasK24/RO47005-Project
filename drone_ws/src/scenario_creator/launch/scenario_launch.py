@@ -28,23 +28,13 @@ DeclareLaunchArgument('repulsion_constant', default_value='1.0', description='Th
         Node(
             package='drone_mpc_python',
             executable='drone_mpc_python',
-<<<<<<< HEAD
-            name='drone_mpc'
-=======
             name='drone_mpc',
             parameters=[{'repulsion_constant': LaunchConfiguration('repulsion_constant')}],
->>>>>>> 5070deea4e8eb62b159f98c0a6469cc8eec9289d
         ),
 
         Node(
             package='trajectory_generator',
             executable='trajectory_publisher',
-<<<<<<< HEAD
-            name='trajectory_publisher'
-        )
-    ])
-=======
             name='trajectory_generator'
         ),
     ])
->>>>>>> 5070deea4e8eb62b159f98c0a6469cc8eec9289d

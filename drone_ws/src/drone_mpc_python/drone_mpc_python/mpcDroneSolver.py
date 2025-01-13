@@ -77,8 +77,6 @@ class DroneMPCSolver:
             repulsion_term = 0
             lh = []
             uh = []
-            ### Try to implement only the maximum repulsion instead of total one:
-            #repulsion_terms = []  # Store all individual repulsion terms for comparison
 
 
             for pos in avoid_pos:
@@ -99,18 +97,7 @@ class DroneMPCSolver:
                 switch = ca.if_else(dist_expr < total_radius ** 2, 0, 1)
                 
                 # Repulsion term that activates when within the threshold
-<<<<<<< HEAD
-                repulsion_term += switch * 0.5 * 1 * ca.power((1 / distance_to_obstacle) - (1 / position_threshold), 2)
-                
-                ### Try to implement only the maximum repulsion instead of total one:
-                #individual_repulsion = switch * 0.5 * 10 * ca.power((1 / distance_to_obstacle) - (1 / position_threshold), 2)
-                #repulsion_terms.append(individual_repulsion)
-
-            ### Try to implement only the maximum repulsion instead of total one:
-            #repulsion_term += ca.if_else(len(repulsion_terms) > 0, ca.mmax(ca.vertcat(*repulsion_terms)), 0)
-=======
                 repulsion_term += switch * 0.5 * repulsion_constant * ca.power((1 / distance_to_obstacle) - (1 / position_threshold), 2)
->>>>>>> 5070deea4e8eb62b159f98c0a6469cc8eec9289d
 
             # Add repulsion term to the cost expression
             ocp.model.cost_y_expr = ca.vertcat(ocp.model.cost_y_expr, repulsion_term)
