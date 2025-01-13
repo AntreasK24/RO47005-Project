@@ -50,7 +50,7 @@ class DroneSimulator(Node):
 
         self.sphere_array_msg = drone_msgs.msg.SphereArray()
         sphere = drone_msgs.msg.Sphere()
-        for _ in range(3):
+        for _ in range(10):
             new_position = np.random.uniform(low=1, high=5, size=(3,))
             sphere = drone_msgs.msg.Sphere()
             sphere.position.x = new_position[0]

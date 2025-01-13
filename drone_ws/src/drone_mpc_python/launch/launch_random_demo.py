@@ -23,18 +23,5 @@ def generate_launch_description():
             package='trajectory_generator',
             executable='trajectory_publisher',
             name='trajectory_publisher'
-        ),
-
-        Node(
-        package='drone_mpc_python',
-        executable='closest_spheres',
-        name='closest_spheres'
-        ),
-    
-        Node(
-        package='drone_mpc_python',
-        executable='average_visibility',
-        name='average_visibility'
-    )
-
+        )
     ])

@@ -21,9 +21,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'drone_mpc_python = drone_mpc_python.drone_mpc_python:main',
-            'closest_spheres = drone_mpc_python.closest_spheres:main',
-            'average_visibility = drone_mpc_python.average_visibility:main'
+            'drone_mpc_python = drone_mpc_python.drone_mpc_python:main'
         ],
     'launch.frontend.launch_description_sources': [
         'launch_random_demo = launch_random_demo.launch.launch_random_demo:generate_launch_description',
