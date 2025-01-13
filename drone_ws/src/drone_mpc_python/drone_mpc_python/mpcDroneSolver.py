@@ -72,6 +72,8 @@ class DroneMPCSolver:
         ocp.cost.W = scipy.linalg.block_diag(self.Q, self.R, attraction_weight)
 
         
+
+        #Add obstacle avoidance constraints and repulsion force
         if avoid_pos is not None:
 
             repulsion_term = 0
@@ -91,9 +93,10 @@ class DroneMPCSolver:
                 ocp.model.con_h_expr = ca.vertcat(ocp.model.con_h_expr, distance_to_obstacle)
 
                 
-                position_threshold = 10.5  # Threshold for repulsion to take effect
+                # Threshold for repulsion 
+                position_threshold = 10.5  
                 
-                # Create a switch that
+                # Create a switch 
                 switch = ca.if_else(dist_expr < total_radius ** 2, 0, 1)
                 
                 # Repulsion term that activates when within the threshold
@@ -136,7 +139,7 @@ class DroneMPCSolver:
 
 
         if self.ocp_solver is None:
-            raise Exception('What are you doing? No do it again, but right this time')
+            raise Exception('Solver not setup please use solver.setup')
         
 
         self.ocp_solver.solve_for_x0(x0_bar=init_pos)

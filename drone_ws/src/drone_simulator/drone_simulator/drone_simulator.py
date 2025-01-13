@@ -21,7 +21,6 @@ class DroneSimulator(Node):
         #Subscriber
         self.velocity_subscriber = self.create_subscription(Twist,'/cmd_vel',self.velocity_callback,10)
         self.avoid_positions_subscriber = self.create_subscription(Float64MultiArray,'/avoid_pos',self.avoid_positions_callback,10)
-        #self.point_reached_subscriber = self.create_subscription(Bool, '/point_reached', self.point_reached_callback, 10)
         #Publisher
         self.pose_publisher = self.create_publisher(Pose, '/pose', 10)
         self.obstacles_publisher = self.create_publisher(drone_msgs.msg.SphereArray,'/spheres', 2)
@@ -135,4 +134,3 @@ if __name__ == '__main__':
 
 
 
-#env.close()

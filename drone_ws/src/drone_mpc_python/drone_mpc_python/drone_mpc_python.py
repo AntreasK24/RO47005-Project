@@ -173,7 +173,7 @@ class DroneMPCNode(Node):
                 velocity_msg.linear.z = 0.0
 
             self.velocity_pub.publish(velocity_msg)
-
+            self.get_logger().info("Setting up new solver...")
             del self.drone_solver
             self.drone_solver = DroneMPCSolver()
             self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5,repulsion_constant=self.get_parameter('repulsion_constant').value)
@@ -288,15 +288,14 @@ class DroneMPCNode(Node):
 
         # Store the new position for plotting
         self.positions.append(self.initial_state[0:3].copy())
-        # if self.get_parameter('visualization').value:
-        #     # Update the 3D plot
-        #     #self.ax.clear()
-        #     self.ax.set_xlim(-10, 10)
-        #     self.ax.set_ylim(-10, 10)
-        #     self.ax.set_zlim(0, 10)
-        #     self.ax.set_xlabel("X Position")
-        #     self.ax.set_ylabel("Y Position")
-        #     self.ax.set_zlabel("Z Position")
+        if self.get_parameter('visualization').value:
+            # Update the 3D plot
+            self.ax.set_xlim(-10, 10)
+            self.ax.set_ylim(-10, 10)
+            self.ax.set_zlim(0, 10)
+            self.ax.set_xlabel("X Position")
+            self.ax.set_ylabel("Y Position")
+            self.ax.set_zlabel("Z Position")
 
         #     # Plot the trajectory as a line
         #     # Update the 3D plot
