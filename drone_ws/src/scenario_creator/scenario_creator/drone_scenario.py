@@ -375,7 +375,7 @@ class Storey():
         defaults = {
             "x_length": 6.0,
             "y_length": 8.0,
-            "height": 4.0,
+            "height": 4.5,
             "ceiling_thickness": 0.4, # TODO: Put it in ceiling_Kwargs
             "position": [0.0, 0.0, 0.0],
             "column_kwargs": {},  # Additional kwargs for columns
@@ -422,7 +422,7 @@ class Storey():
                 self.y_length / 2 + self.position[1],
                 self.height + self.ceiling_thickness + self.position[2],
             ],
-            size=[self.x_length / 2, self.y_length / 2, self.ceiling_thickness],
+            size=[self.x_length / 2, self.y_length / 2, self.ceiling_thickness/2],
             geom_shape="cuboid",
             **self.ceiling_kwargs,
         )

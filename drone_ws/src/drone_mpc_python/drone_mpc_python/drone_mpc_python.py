@@ -12,13 +12,18 @@ import matplotlib.pyplot as plt
 from drone_mpc_python.mpcDroneSolver import DroneMPCSolver
 from mpl_toolkits.mplot3d import Axes3D
 
+import timeit
+import time
+import json
+from datetime import datetime
+
 class DroneMPCNode(Node):
     #Constructor
     def __init__(self):
         super().__init__('drone_mpc')
 
         #Wait for the environment to initialize
-        time.sleep(20)
+        # time.sleep(20)
 
         self.hover = False
         self.positions = []
@@ -120,7 +125,30 @@ class DroneMPCNode(Node):
             self.ax.set_ylabel("Y Position")
             self.ax.set_zlabel("Z Position")
 
-    
+        self.is_reached = Bool()
+        self.is_reached.data = False
+
+        # Declaring variables for evaluation metrics
+        self.total_time = 0
+        self.error_tolerance = 0.3 # Error tolerance at the final goal position
+        self.control_effort = 0
+        self.start_time_flag = True
+        self.l2_error_list = []
+        self.settling_time_period = 5 # Approximating settling time (in seconds)
+        self.start_time = None
+        self.inst_velocity = 0         
+
+        self.logs = {"dt": self.dt,"control_effort": [], "computation_time": [], "norm_inputs": [], "endpoint_tracking_error": [], "drone_position": [], "inst_velocity": []}
+
+    def save_logs(self):
+        current_time = datetime.now()
+        unique_name = current_time.strftime("%Y%m%d_%H%M%S")
+        filename = "logs_"+unique_name+".json"
+
+        with open(filename, 'w') as f:
+            json.dump(self.logs, f)
+        print(f"Evaluation Metrics Logs saved to {filename}")
+
     def avoid_pos_callback(self,msg):
         if msg is not None:
             positions = []
@@ -157,14 +185,29 @@ class DroneMPCNode(Node):
         
         distance  =np.linalg.norm(self.initial_state[:3] - self.target_pos[:3])
 
-        if distance < 0.3 and self.new_pos == True:
+        if distance < self.error_tolerance and self.new_pos == True:
             self.get_logger().info("Target Reached")
+
+            if self.start_time_flag:
+                self.start_time = time.time()
+                self.start_time_flag = False
+            
+            self.l2_error_list.append(distance)
+            self.get_logger().info(f"Computating steady state error... \n Waiting time: {time.time() - self.start_time}")
+
+            if (time.time() - self.start_time) > self.settling_time_period: # Waiting for 5 seconds (for computing average steady state error (approximate))
+                self.new_pos = False
+                self.is_reached.data = not self.new_pos
+                self.reached_point_pub.publish(self.is_reached) # BEWARE that it publishes delayed
+
+                self.logs["endpoint_tracking_error"].append(np.mean(self.l2_error_list)) # Saving endpoint tracking error (mean of distance error after reaching within error tolerance)
             
             point_reached = Bool()
             point_reached.data = True
 
-            self.reached_point_pub.publish(point_reached)
-            self.new_pos = False
+            self.total_time = 0 # Reset total time after reaching the final position NOTE: comment it when computing for all waypoints within a run
+            self.control_effort = 0 # Reset control effort after reaching the final position NOTE: comment it when computing for all waypoints within a run
+            self.inst_velocity = 0
 
     def target_position_callback(self,msg):
         
@@ -192,6 +235,7 @@ class DroneMPCNode(Node):
             self.drone_solver.setup_solver(init_pos=self.initial_state,target_pos=self.target_pos,avoid_pos=self.avoid_pos,d_min=0.5,repulsion_constant=self.get_parameter('repulsion_constant').value)
             self.hover = False
             self.new_pos = True
+            self.is_reached.data = not self.new_pos
 
     
 
@@ -199,8 +243,27 @@ class DroneMPCNode(Node):
     def timer_callback(self):
 
         #Solve optimization problem and get first control input
+        start = timeit.default_timer()
         control_input, predicted_steps = self.drone_solver.solve(self.initial_state)
-        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}")
+        stop = timeit.default_timer()
+        self.get_logger().info(f"Target position: Is Reached:',{self.is_reached.data}")
+
+        if not self.is_reached.data: # Compute until reaching the final position
+
+            time_taken_each_step = stop - start # Compute MPC computation time for each step
+            self.total_time += time_taken_each_step # Accumulate MPC computation time
+            self.control_effort += (np.sum(np.abs(control_input)) * self.dt) # control_effort = integrate abs(control_inputs) dt
+
+            self.inst_velocity =  (np.linalg.norm(predicted_steps[1][:3] - predicted_steps[0][:3]))/self.dt
+            
+            self.logs["computation_time"].append(time_taken_each_step) # Saving instantaneous computation time of the MPC solver
+            self.logs["control_effort"].append(np.sum(np.abs(control_input)*self.dt)) # Saving instantaneous control efforts
+            self.logs["inst_velocity"].append(self.inst_velocity) # Saving Instantaneous Velocity
+            self.logs["norm_inputs"].append(list(np.abs(control_input/self.accel_max))) # Saving instantaneous normalized inputs
+            self.logs["drone_position"].append(list(self.initial_state[:3])) # Saving current drone position
+            
+        self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}, Computation time: {self.total_time} s, Control effort: {self.control_effort}, norm inputs: {list(np.abs(control_input/self.accel_max))}, Instantaneous Velocity: {self.inst_velocity}")
+        # self.get_logger().info(f"Target position: {self.target_pos}, Current state: {self.initial_state}")
         self.visualize_steps(predicted_steps)
 
         if self.noise:
@@ -225,39 +288,39 @@ class DroneMPCNode(Node):
 
         # Store the new position for plotting
         self.positions.append(self.initial_state[0:3].copy())
-        if self.get_parameter('visualization').value:
-            # Update the 3D plot
-            #self.ax.clear()
-            self.ax.set_xlim(-10, 10)
-            self.ax.set_ylim(-10, 10)
-            self.ax.set_zlim(0, 10)
-            self.ax.set_xlabel("X Position")
-            self.ax.set_ylabel("Y Position")
-            self.ax.set_zlabel("Z Position")
+        # if self.get_parameter('visualization').value:
+        #     # Update the 3D plot
+        #     #self.ax.clear()
+        #     self.ax.set_xlim(-10, 10)
+        #     self.ax.set_ylim(-10, 10)
+        #     self.ax.set_zlim(0, 10)
+        #     self.ax.set_xlabel("X Position")
+        #     self.ax.set_ylabel("Y Position")
+        #     self.ax.set_zlabel("Z Position")
 
-            # Plot the trajectory as a line
-            # Update the 3D plot
-            self.ax.cla()  
-            self.ax.set_xlim(-10, 10)
-            self.ax.set_ylim(-10, 10)
-            self.ax.set_zlim(0, 10)
-            self.ax.set_xlabel("X Position")
-            self.ax.set_ylabel("Y Position")
-            self.ax.set_zlabel("Z Position")
+        #     # Plot the trajectory as a line
+        #     # Update the 3D plot
+        #     self.ax.cla()  
+        #     self.ax.set_xlim(-10, 10)
+        #     self.ax.set_ylim(-10, 10)
+        #     self.ax.set_zlim(0, 10)
+        #     self.ax.set_xlabel("X Position")
+        #     self.ax.set_ylabel("Y Position")
+        #     self.ax.set_zlabel("Z Position")
 
-            # Plot the trajectory as a line
-            x_vals = [pos[0] for pos in self.positions]
-            y_vals = [pos[1] for pos in self.positions]
-            z_vals = [pos[2] for pos in self.positions]
-            self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
+        #     # Plot the trajectory as a line
+        #     x_vals = [pos[0] for pos in self.positions]
+        #     y_vals = [pos[1] for pos in self.positions]
+        #     z_vals = [pos[2] for pos in self.positions]
+        #     self.ax.plot(x_vals, y_vals, z_vals, c='b', marker='o')
 
-            if self.avoid_pos is not None:
-                for pos in self.avoid_pos:
-                    self.ax.scatter(pos[0], pos[1], pos[2], c='r', marker='x')
+        #     if self.avoid_pos is not None:
+        #         for pos in self.avoid_pos:
+        #             self.ax.scatter(pos[0], pos[1], pos[2], c='r', marker='x')
 
-            # Redraw the plot and pause briefly
-            plt.draw()
-            plt.pause(0.1)
+        #     # Redraw the plot and pause briefly
+        #     plt.draw()
+        #     plt.pause(0.1)
 
 
 
@@ -279,15 +342,22 @@ class DroneMPCNode(Node):
         
 
 def main(args=None):
-    rclpy.init(args=args)
 
-    drone_mpc_node = DroneMPCNode()
-
-    rclpy.spin(drone_mpc_node)
-
-    # Destroy the node explicitly
-    drone_mpc_node.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.init(args=args)
+        drone_mpc_node = DroneMPCNode()
+        rclpy.spin(drone_mpc_node)
+    except KeyboardInterrupt:
+        # Saving logs for post-processing
+        drone_mpc_node.get_logger().info("=========================================Keyboard Interruption: Saving logs for post-processing========================================================")
+        drone_mpc_node.save_logs()
+    finally:
+        # Saving logs for post-processing
+        drone_mpc_node.get_logger().info("===============================================Finally: Saving logs for post-processing========================================================")
+        drone_mpc_node.save_logs()               
+        # Destroy the node explicitly
+        drone_mpc_node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
