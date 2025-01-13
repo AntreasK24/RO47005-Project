@@ -79,6 +79,7 @@ class DroneSimulator(Node):
 
         ##### STATC OBSTACLES
             # Create a building (static obstacles)
+            # the global_planner.constraint_generator node will limit the z-height of considered obstacles to 4
         
         self.building = Building(
             storeys=3,
@@ -93,31 +94,15 @@ class DroneSimulator(Node):
         building_info = self.building.create()
         self.static_obstacles.extend(building_info) if self.static_obstacles is not None else self.static_obstacles.append(building_info) 
         
-
+        ### How to create more obstacles: 
         cylinder = Obstacle(position=[1,1,1],length=1.8,radius=0.22,geom_shape='cylinder')
         cylinder_info = cylinder.create()
         self.static_obstacles.append(cylinder_info)
 
-        # cylinder = Obstacle(position=[2,1,1],length=2.0,radius=0.1,geom_shape='cylinder')
-        # cylinder_info = cylinder.create()
-        # self.static_obstacles.append(cylinder_info)
 
-        # cylinder = Obstacle(position=[3,1,1],length=2.0,radius=0.1,geom_shape='cylinder')
-        # cylinder_info = cylinder.create()
-        # self.static_obstacles.append(cylinder_info)
-
-
-
-        # cylinder = Obstacle(position=[1,2,1],length=2.0,radius=0.1,geom_shape='cylinder')
-        # cylinder_info = cylinder.create()
-        # self.static_obstacles.append(cylinder_info)
-
-        # cylinder = Obstacle(position=[1,3,1],length=2.0,radius=0.1,geom_shape='cylinder')
-        # cylinder_info = cylinder.create()
-        # self.static_obstacles.append(cylinder_info)
 
         '''
-        ##### DYNAMIC OBSTACLES
+        ##### DYNAMIC OBSTACLES: Example
             # Create a dynamic obstacle
         self.dynamic_obstacle = Obstacle(position=[0,3.0,1.0],length=2.0,radius=0.22,color=[0, 1, 0, 0.5],geom_shape='cylinder', dynamic=True)
         obstacle_info = self.dynamic_obstacle.create()
@@ -133,13 +118,9 @@ class DroneSimulator(Node):
         self.current_angular_velocity = np.array([[msg.angular.x,msg.angular.y,msg.angular.z]])
         self.current_velocity = np.hstack((self.current_linear_velocity,self.current_angular_velocity))
 
-        print(self.current_velocity)
     
     def waypoint_callback(self,msg):
-
-        # Visualize a path - Example 
-        #self.path_points = np.array([[0, 0, 0], [1, 1, 0.5], [2, 2, 1.5]])
-        # msg is a List of 3D Points (geometry_msgs/msg/PoseArray - ignoring orientation)
+        ''' Creates planned waypoints if recieved'''
         points = []
         points.append(self.drone_position)
 
@@ -157,6 +138,7 @@ class DroneSimulator(Node):
             self.path = PathVisual(self.waypoints)
 
     def target_position_callback(self,target_pos):
+        ''' Creates a line between the target and the drone when recieving a target position'''
         data = np.array(target_pos.data)
         x, y, z, = data[0], data[1], data[2] 
         positions = []
@@ -183,6 +165,7 @@ class DroneSimulator(Node):
 
 
     def sphere_callback(self,msg):
+        ''' Will vizualize the spherical obstacles published in /spheres'''
         self.spheres = msg.spheres # SphereArray
 
         if self.sphere_marker is not None:
@@ -192,6 +175,7 @@ class DroneSimulator(Node):
         
     #def timer_static_obstacles(self):
     def timer_obstacles(self):
+        ''' Will publish the positions, shapes and sizes of the obstacles (for dynamic and static obstacles)'''
         # Publish static obstacles
         obstacles_msg = drone_msgs.msg.ObstacleArray()
         for obstacle in self.static_obstacles:
@@ -206,8 +190,6 @@ class DroneSimulator(Node):
             obstacles_msg.obstacles.append(static_obstacle)
 
 
-
-        #def timer_dynamic_obstacles(self):
         if self.dynamic_obstacles:
             # Publish dynamic obstacles
 
@@ -233,21 +215,13 @@ class DroneSimulator(Node):
         return pose
 
     def timer_simulation(self):
-        #p.stepSimulation()
-
+       
         if self.dynamic_obstacles:
             ##### UPDATE obstacles
                 # Calculate new position using a sine wave for smooth movement
             x_position = math.sin(self.time) * 2  # Oscillate between -2 and 2 along the x-axis
             self.dynamic_obstacle.update_pose(position=[x_position, 2.0, 0.5])
         
-
-        #### Waypoint example
-        #new_waypoints = self.path_points + np.array([[0,0,0],[0,0,x_position*0.1],[0,0,x_position*0.1]])
-        #new_waypoints[0,:] = self.drone_position
-        #self.path.update(new_waypoints)
-
-
         ##### UPDATE drone
             #Give velocity commands to drone and publish position
         pose_message = Pose()
@@ -274,6 +248,7 @@ class DroneSimulator(Node):
             self.waypoints[0] = self.drone_position
             self.path.update(self.waypoints)
 
+        ##### Update traveled path
         if (self.time_step % 240) == 0:
             if not self.past_drone_positions or not np.allclose(self.past_drone_positions[-1], self.drone_position, atol=1e-3):
                 # Append the current position as it has changed noticeably
@@ -422,7 +397,7 @@ class Storey():
                 self.y_length / 2 + self.position[1],
                 self.height + self.ceiling_thickness + self.position[2],
             ],
-            size=[self.x_length / 2, self.y_length / 2, self.ceiling_thickness/2],
+            size=[self.x_length / 2, self.y_length / 2, self.ceiling_thickness],
             geom_shape="cuboid",
             **self.ceiling_kwargs,
         )
@@ -503,13 +478,13 @@ class Marker:
             self.radius = radii
 
     def _convert_to_list(self, positions):
-        """ Converts waypoints to a Python list if they are provided as an array """
+        ''' Converts waypoints to a Python list if they are provided as an array '''
         if isinstance(positions, np.ndarray):
             return positions.tolist()
         return positions
 
     def _create_visuals(self):
-        """Creates points based on the positions."""
+        '''Creates points based on the positions.'''
         if self.spheres is not None:
             self._convertSphereArray(self.spheres)
             self._variable_radius = True        
@@ -546,7 +521,7 @@ class Marker:
                 self.point_ids.append(point_id)
 
     def update(self, sphere_array, positions=None, radius=None):
-        """ Updates the waypoint positions to safe computational power. Varying lengths of waypoints should be handled """
+        ''' Updates the waypoint positions to safe computational power. Varying lengths of waypoints should be handled '''
 
         self._convertSphereArray(sphere_array)
         self.spheres = sphere_array
@@ -654,14 +629,14 @@ class Marker:
 
 
     def _clear_visuals(self):
-        """Removes all debug lines and points"""
+        '''Removes all debug lines and points'''
         for point_id in self.point_ids:
             p.removeBody(point_id)
         
         self.point_ids.clear()
 
     def __del__(self):
-        """Ensures that all visuals are removed when the object is deleted"""
+        '''Ensures that all visuals are removed when the object is deleted'''
         try:
             self._clear_visuals()
         except Exception:
@@ -669,12 +644,11 @@ class Marker:
 
 class PathVisual:
     def __init__(self, waypoints=None, line_color=[0, 1, 0], point_color=[1, 0, 0, 1], line_width=2, point_radius=0.02):
-        """
-        This class is able to visualize planned waypoints in the simulation environment
+        '''  This class visualizes planned waypoints in the simulation environment
         
         Parameters:
-            waypoints (list or np.ndarray): List or NumPy array of 3D waypoints as [[x1, y1, z1], [x2, y2, z2], ...].
-        """
+            waypoints (list or np.ndarray): List or numpy array of 3D waypoints as [[x1, y1, z1], [x2, y2, z2], ...].
+        '''
         self.waypoints = self._convert_to_list(waypoints) if waypoints else []
         self.line_color = line_color
         self.point_color = point_color
@@ -687,13 +661,13 @@ class PathVisual:
         self._create_visuals()  # Create the initial visuals
     
     def _convert_to_list(self, waypoints):
-        """ Converts waypoints to a Python list if they are provided as a NumPy array """
+        ''' Converts waypoints to a list if they are provided as an array '''
         if isinstance(waypoints, np.ndarray):
             return waypoints.tolist()
         return waypoints
 
     def _create_visuals(self):
-        """Creates the initial debug lines and points based on the waypoints."""
+        '''creates initial lines and points '''
         self._clear_visuals()
         
         # Create points as small spheres
@@ -721,7 +695,7 @@ class PathVisual:
             self.line_ids.append(line_id)
      
     def update(self, waypoints):
-        """ Updates the waypoint positions to safe computational power. Varying lengths of waypoints should be handled """
+        ''' updates waypoint positions to safe computational power. Varying lengths of waypoints should be handled '''
         waypoints = self._convert_to_list(waypoints)
 
         # Handle varying lengths: Create or remove spheres and lines as necessary
@@ -775,7 +749,7 @@ class PathVisual:
         self.waypoints = waypoints
 
     def _clear_visuals(self):
-        """Removes all debug lines and points"""
+        '''Removes all debug lines and points'''
         for line_id in self.line_ids:
             p.removeUserDebugItem(line_id)
         for point_id in self.point_ids:
@@ -785,7 +759,7 @@ class PathVisual:
         self.point_ids.clear()
 
     def __del__(self):
-        """Ensures that all visuals are removed when the object is deleted"""
+        '''Ensures that all visuals are removed when the object is deleted'''
         try:
             self._clear_visuals()
         except Exception:
@@ -802,20 +776,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
-
-# TODO: ROS params ,
-# TODO: randomization with random seed, 
-
-
-
-# TODO: Implement different difficulties
-
-# TODO: input validation
-    # if not isinstance(value, int):
-    #    raise TypeError("Value must be an integer")
-    # if value <= 0:
-    #    raise ValueError("Value must be greater than zero")
-
-# TODO: Change static obstacle publisher to a service
-

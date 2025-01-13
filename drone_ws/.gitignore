@@ -4,3 +4,4 @@ log/
 c_generated_code/
 acados_ocp_drone_non_linea_ode.json
 acados_ocp_drone_ode.json
+logs*

@@ -29,8 +29,8 @@ class ConstraintNode(Node):
 
 
     def cylinder_to_sphere(self, pose, length, r_cyl):
-        spheres = []
         # calculate the desired positions and radius of the spheres
+        spheres = []
         
         orientation = [pose.orientation.x,pose.orientation.y,pose.orientation.z,pose.orientation.w]
         rotation_matrix = self.quaternion_to_rotation_matrix(orientation)
@@ -40,11 +40,10 @@ class ConstraintNode(Node):
         base_position = base_position - cylinder_axis * length / 2
 
         r_sphere = np.sqrt(r_cyl**2 + r_cyl**2) # sphere radius - will be 1.41 * radius_cylinder
-        
-        #self.get_logger().info(f'Base position: {base_position}', once=True)
-        
+
+        # Determine the number of spheres along the axis    
         num_spheres = int(length // r_cyl)
-        #self.get_logger().info(f'Number of spheres: {num_spheres}', once=True)
+
 
         for i in range(1,num_spheres):
             sphere = drone_msgs.msg.Sphere()
@@ -103,7 +102,6 @@ class ConstraintNode(Node):
         y_positions = np.linspace(base_position[1, 0], base_position[1, 0] + 2* y_len, num_spheres_y)
         # z_positions = np.linspace(base_position[2, 0], base_position[2, 0] + z_len, num_spheres_z)
 
-        # Create the meshgrid
         Xs, Ys = np.meshgrid(x_positions, y_positions)
         # Xs, Ys, Zs = np.meshgrid(x_positions, y_positions, z_positions)
 
@@ -158,7 +156,9 @@ class ConstraintNode(Node):
                 radius = obstacle.size
                 spheres = self.sphere_to_sphere(pose,radius)
                 sphere_array.extend(spheres)
-            ''' To computationally expensive
+
+            ''' To computationally expensive!:
+
             elif obstacle.shape == "cuboid":
                 pose = obstacle.pose
                 x_len, y_len, z_len = obstacle.size
